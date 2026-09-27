@@ -72,7 +72,6 @@
       border-bottom: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      transition: all 0.2s ease-in-out;
     }
     .chord-strip-header {
       display: flex;
@@ -92,9 +91,6 @@
       font-size: 11px;
       font-weight: 600;
       cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 4px;
     }
 
     .chord-strip-items {
@@ -105,12 +101,8 @@
       white-space: nowrap;
       align-items: center;
     }
-    .chord-strip-container.collapsed .chord-strip-items {
-      display: none;
-    }
-    .chord-strip-container.collapsed .chord-strip-header {
-      padding: 5px 12px;
-    }
+    .chord-strip-container.collapsed .chord-strip-items { display: none; }
+    .chord-strip-container.collapsed .chord-strip-header { padding: 5px 12px; }
 
     .chord-pill {
       background: var(--card);
@@ -150,10 +142,12 @@
       outline: none;
       color: var(--text);
       font-size: 15px;
+      font-family: 'SF Mono', Menlo, Consolas, Monaco, monospace;
       line-height: 28px;
       padding: 12px 14px;
       resize: none;
-      white-space: pre-wrap;
+      white-space: pre;
+      overflow-x: auto;
     }
 
     /* Single Song View */
@@ -168,26 +162,14 @@
       user-select: text;
     }
 
-    /* Printable Book Container */
+    /* Multi-Song Print Container */
     #all-songs-print-container { display: none; }
 
-    .song-print-block {
-      page-break-after: always;
-      padding: 24px 0;
-    }
-    .song-print-block:last-child {
-      page-break-after: auto;
-    }
-    .song-print-title {
-      font-size: 24px;
-      font-weight: 800;
-      margin-bottom: 16px;
-      color: #000;
-      border-bottom: 2px solid #ddd;
-      padding-bottom: 6px;
-    }
+    .song-print-block { page-break-after: always; padding: 24px 0; }
+    .song-print-block:last-child { page-break-after: auto; }
+    .song-print-title { font-size: 24px; font-weight: 800; margin-bottom: 16px; color: #000; border-bottom: 2px solid #ddd; padding-bottom: 6px; }
 
-    .chord-line { display: block; margin-bottom: 8px; }
+    .chord-line { display: block; margin-bottom: 8px; font-family: monospace; }
     .lyric-unit {
       display: inline-flex;
       flex-direction: column;
@@ -287,12 +269,7 @@
       cursor: pointer;
     }
     .song-row.active { border-color: var(--accent); }
-    .song-checkbox {
-      width: 18px;
-      height: 18px;
-      accent-color: var(--accent);
-      cursor: pointer;
-    }
+    .song-checkbox { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; }
     .song-info { flex: 1; overflow: hidden; }
     .song-name { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
@@ -302,7 +279,6 @@
 
     #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: rgba(30, 32, 40, 0.95); border: 1px solid var(--border-light); color: #fff; font-size: 12px; font-weight: 600; padding: 8px 16px; border-radius: 20px; z-index: 500; display: none; }
 
-    /* Print / PDF Styling */
     @media print {
       body { background: #fff !important; color: #000 !important; }
       header, .chord-strip-container, .meter-rail, #lyrics-input, .reference-suite, #selection-rhyme-btn, .overlay, .popover-menu, #toast { display: none !important; }
@@ -338,32 +314,28 @@
   <!-- Collapsible Chords Bar -->
   <div class="chord-strip-container" id="chord-strip-container">
     <div class="chord-strip-header" onclick="toggleChordsCollapse()">
-      <span>Quick Chords</span>
+      <span>Quick Chords (Inserts Above Current Word)</span>
       <button class="chord-collapse-toggle" id="chord-collapse-btn">Hide ▲</button>
     </div>
     <div class="chord-strip-items" id="chord-strip-items">
-      <button class="chord-pill" onclick="insertChord('G')">G</button>
-      <button class="chord-pill" onclick="insertChord('F')">F</button>
-      <button class="chord-pill" onclick="insertChord('C')">C</button>
-      <button class="chord-pill" onclick="insertChord('D')">D</button>
-      <button class="chord-pill" onclick="insertChord('Am')">Am</button>
-      <button class="chord-pill" onclick="insertChord('Em')">Em</button>
-      <button class="chord-pill" onclick="insertChord('Bb')">Bb</button>
+      <button class="chord-pill" onclick="insertChordAbove('G')">G</button>
+      <button class="chord-pill" onclick="insertChordAbove('F')">F</button>
+      <button class="chord-pill" onclick="insertChordAbove('C')">C</button>
+      <button class="chord-pill" onclick="insertChordAbove('D')">D</button>
+      <button class="chord-pill" onclick="insertChordAbove('Am')">Am</button>
+      <button class="chord-pill" onclick="insertChordAbove('Em')">Em</button>
+      <button class="chord-pill" onclick="insertChordAbove('Bb')">Bb</button>
       <button class="chord-pill" onclick="promptCustomChord()">+ Custom</button>
     </div>
   </div>
 
   <div class="workspace">
     <div class="editor-section">
-      <div class="meter-rail" id="meter-rail">1</div>
-      <textarea id="lyrics-input" placeholder="Use bracket chords: [G]We all [F]came out to [G]Montreux..."></textarea>
+      <div class="meter-rail" id="meter-rail"></div>
+      <textarea id="lyrics-input" placeholder="Type lyrics here... Place your cursor on any word and tap a chord above."></textarea>
       
-      <!-- Current Song Chord Sheet -->
       <div id="chord-view"></div>
-
-      <!-- Export Multiple Songs Container -->
       <div id="all-songs-print-container"></div>
-
       <button id="selection-rhyme-btn">Rhymes</button>
     </div>
 
@@ -388,7 +360,7 @@
     </div>
   </div>
 
-  <!-- Song Catalog Modal with Multi-Select -->
+  <!-- Song Catalog Modal -->
   <div class="overlay" id="catalog-overlay">
     <div class="dialog">
       <div class="dialog-header">
@@ -399,7 +371,6 @@
         </div>
       </div>
       
-      <!-- Selection Bar -->
       <div class="catalog-actions-bar">
         <div>
           <button class="btn" style="padding:4px 8px; font-size:11px;" onclick="toggleSelectAll()">Select All</button>
@@ -450,7 +421,7 @@
     let selectedWord = '';
 
     function init() {
-      const stored = localStorage.getItem('mrwriter_v5');
+      const stored = localStorage.getItem('mrwriter_v6');
       if (stored) {
         state = JSON.parse(stored);
       } else {
@@ -460,7 +431,7 @@
           versions: [{
             id: 'v_1',
             label: 'v1',
-            lyrics: '[G]  [F]  [G]\nWe all came out to Montreux\n[F]  [G]\nOn the Lake Geneva shoreline\n[F]  [G]\nTo make records with a mobile\n[F]  [G]\nWe didn\'t have much time\n[G]  [F]  [G]\nFrank Zappa and the Mothers\n[F]  [G]\nWere at the best place around\n[F]  [G]\nBut some stupid with a flare gun\n[F]  [G]\nBurned the place to the ground',
+            lyrics: ' G   F   G\nWe all came out to Montreux\n     F   G\nOn the Lake Geneva shoreline\n     F   G\nTo make records with a mobile\n     F   G\nWe didn\'t have much time\n G   F   G\nFrank Zappa and the Mothers\n     F   G\nWere at the best place around\n     F   G\nBut some stupid with a flare gun\n     F   G\nBurned the place to the ground',
             updatedAt: Date.now()
           }]
         };
@@ -470,7 +441,6 @@
         saveState();
       }
 
-      // Restore collapsible bar state
       if (localStorage.getItem('mrwriter_chords_collapsed') === 'true') {
         chordContainer.classList.add('collapsed');
         chordCollapseBtn.innerText = 'Show ▼';
@@ -486,7 +456,7 @@
     }
 
     function saveState() {
-      localStorage.setItem('mrwriter_v5', JSON.stringify(state));
+      localStorage.setItem('mrwriter_v6', JSON.stringify(state));
     }
 
     function showToast(text) {
@@ -512,34 +482,122 @@
       saveState();
     }
 
-    // Bracket-to-Overlaid-Chord HTML Parser
+    // Helper: Check if a line is exclusively chords (e.g., G F [G] Am)
+    function isChordOnlyLine(line) {
+      if (!line.trim()) return false;
+      // Strip brackets, spaces, and known chord modifiers
+      const tokens = line.trim().split(/\s+/);
+      const chordPattern = /^(\[)?[A-G](b|#)?(maj|m|min|dim|aug|sus)?\d*(\])?$/i;
+      return tokens.every(tok => chordPattern.test(tok));
+    }
+
+    // Insert Chord on the line ABOVE the current word at the exact column
+    function insertChordAbove(chord) {
+      const cursorPos = textarea.selectionStart;
+      const fullText = textarea.value;
+
+      // 1. Identify current line start & cursor column
+      const lineStart = fullText.lastIndexOf('\n', cursorPos - 1) + 1;
+      let lineEnd = fullText.indexOf('\n', cursorPos);
+      if (lineEnd === -1) lineEnd = fullText.length;
+      const currentLine = fullText.substring(lineStart, lineEnd);
+      const col = cursorPos - lineStart;
+
+      // 2. Find the start of the word under cursor
+      let wordStartCol = col;
+      while (wordStartCol > 0 && /\S/.test(currentLine[wordStartCol - 1])) {
+        wordStartCol--;
+      }
+
+      const lines = fullText.split('\n');
+      // Find index of current line in array
+      let currentLineIdx = fullText.substring(0, lineStart).split('\n').length - 1;
+
+      // 3. Check if line above is already a chord line
+      let targetChordLineIdx = currentLineIdx - 1;
+      let targetLine = targetChordLineIdx >= 0 ? lines[targetChordLineIdx] : null;
+
+      if (targetLine !== null && isChordOnlyLine(targetLine)) {
+        // Pad with spaces if chord line is shorter than the column
+        let padded = targetLine.padEnd(wordStartCol, ' ');
+        // Insert chord
+        let before = padded.substring(0, wordStartCol);
+        let after = padded.substring(wordStartCol + chord.length);
+        lines[targetChordLineIdx] = before + chord + (after.length > 0 ? after : '');
+      } else {
+        // Create a new chord line above
+        const newChordLine = ' '.repeat(wordStartCol) + chord;
+        lines.splice(currentLineIdx, 0, newChordLine);
+        currentLineIdx++;
+      }
+
+      // Reassemble text
+      textarea.value = lines.join('\n');
+      
+      // Keep cursor position stable on the word
+      const newCursorPos = lines.slice(0, currentLineIdx).join('\n').length + 1 + col;
+      textarea.setSelectionRange(newCursorPos, newCursorPos);
+      textarea.focus();
+
+      calculateMeter();
+      renderChordView();
+      showToast(`Inserted ${chord} above word`);
+    }
+
+    function promptCustomChord() {
+      const chord = prompt('Enter custom chord (e.g., Dmaj7, F#m):');
+      if (chord && chord.trim()) insertChordAbove(chord.trim());
+    }
+
+    // Render Overlaid Chord Sheet (for Print and Chord Preview)
     function parseLyricsToHtml(rawLyrics) {
       const lines = rawLyrics.split('\n');
-      return lines.map(line => {
-        if (!line.trim()) return '<div class="chord-line">&nbsp;</div>';
-        
-        const regex = /\[(.*?)\]|([^\s\[\]]+)|\s+/g;
-        let match;
-        let pendingChord = '';
-        let html = '<div class="chord-line">';
+      let html = '';
 
-        while ((match = regex.exec(line)) !== null) {
-          if (match[1] !== undefined) {
-            pendingChord = match[1];
-          } else if (match[2] !== undefined) {
-            html += `<span class="lyric-unit"><span class="chord-label">${pendingChord || '&nbsp;'}</span><span class="lyric-text">${match[2]}</span></span> `;
-            pendingChord = '';
-          } else if (match[0].includes(' ') && pendingChord) {
-            html += `<span class="lyric-unit"><span class="chord-label">${pendingChord}</span><span class="lyric-text">&nbsp;&nbsp;</span></span>`;
-            pendingChord = '';
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        if (isChordOnlyLine(line)) {
+          // If next line exists, pair them
+          const chordLine = line;
+          const lyricLine = (i + 1 < lines.length && !isChordOnlyLine(lines[i + 1])) ? lines[++i] : '';
+
+          html += '<div class="chord-line">';
+          let cIdx = 0;
+          let lIdx = 0;
+          const maxLen = Math.max(chordLine.length, lyricLine.length);
+
+          // Render aligned monospace pairs
+          while (cIdx < chordLine.length || lIdx < lyricLine.length) {
+            const chordChar = chordLine[cIdx] || ' ';
+            const lyricChar = lyricLine[lIdx] || ' ';
+
+            // If chord token starts here
+            if (chordChar !== ' ' && (cIdx === 0 || chordLine[cIdx - 1] === ' ')) {
+              let chordToken = '';
+              while (cIdx < chordLine.length && chordLine[cIdx] !== ' ') {
+                chordToken += chordLine[cIdx++];
+              }
+              let lyricChunk = '';
+              for (let k = 0; k < chordToken.length; k++) {
+                lyricChunk += lyricLine[lIdx++] || '&nbsp;';
+              }
+              html += `<span class="lyric-unit"><span class="chord-label">${chordToken}</span><span class="lyric-text">${lyricChunk.replace(/\s/g, '&nbsp;')}</span></span>`;
+            } else {
+              html += `<span class="lyric-unit"><span class="chord-label">&nbsp;</span><span class="lyric-text">${lyricChar === ' ' ? '&nbsp;' : lyricChar}</span></span>`;
+              cIdx++;
+              lIdx++;
+            }
+          }
+          html += '</div>';
+        } else {
+          if (!line.trim()) {
+            html += '<div class="chord-line">&nbsp;</div>';
+          } else {
+            html += `<div class="chord-line"><span class="lyric-text">${line.replace(/\s/g, '&nbsp;')}</span></div>`;
           }
         }
-        if (pendingChord) {
-          html += `<span class="lyric-unit"><span class="chord-label">${pendingChord}</span><span class="lyric-text">&nbsp;</span></span>`;
-        }
-        html += '</div>';
-        return html;
-      }).join('');
+      }
+      return html;
     }
 
     function renderChordView() {
@@ -629,6 +687,7 @@
     function calculateMeter() {
       const lines = textarea.value.split('\n');
       meterRail.innerHTML = lines.map(line => {
+        if (isChordOnlyLine(line)) return '&nbsp;'; // Don't count syllables for chord lines
         const cleanLine = line.replace(/\[.*?\]/g, '').trim();
         if (!cleanLine) return '&nbsp;';
         const words = cleanLine.split(/\s+/);
@@ -638,22 +697,7 @@
 
     textarea.addEventListener('input', calculateMeter);
 
-    function insertChord(chord) {
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const text = textarea.value;
-      const insertion = `[${chord}]`;
-      textarea.value = text.substring(0, start) + insertion + text.substring(end);
-      textarea.selectionStart = textarea.selectionEnd = start + insertion.length;
-      textarea.focus();
-      calculateMeter();
-    }
-
-    function promptCustomChord() {
-      const chord = prompt('Enter chord (e.g., C#m7, Bsus4):');
-      if (chord && chord.trim()) insertChord(chord.trim());
-    }
-
+    // Rhyme Tooltip & Search
     function inspectSelection() {
       const s = textarea.selectionStart;
       const e = textarea.selectionEnd;
@@ -742,6 +786,7 @@
       }
     }
 
+    // Save Logic
     function openSaveDialog() { document.getElementById('save-overlay').classList.add('active'); }
     function closeSaveDialog() { document.getElementById('save-overlay').classList.remove('active'); }
 
@@ -783,6 +828,7 @@
       showToast(`Created "${newSong.title}"`);
     }
 
+    // Catalog & Select All
     function updateSelectedCounter() {
       const btn = document.getElementById('export-selected-btn');
       btn.innerText = `Export Selected (${selectedSongIds.size})`;
@@ -820,11 +866,8 @@
         const checkbox = item.querySelector('.song-checkbox');
         checkbox.onclick = (e) => {
           e.stopPropagation();
-          if (checkbox.checked) {
-            selectedSongIds.add(song.id);
-          } else {
-            selectedSongIds.delete(song.id);
-          }
+          if (checkbox.checked) selectedSongIds.add(song.id);
+          else selectedSongIds.delete(song.id);
           updateSelectedCounter();
         };
 
