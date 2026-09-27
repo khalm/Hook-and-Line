@@ -6,47 +6,71 @@
   <title>Mr. Writer</title>
   <style>
     :root {
-      --bg: #141416;
-      --card: #1f1f23;
-      --border: #2e2e34;
+      --bg: #121214;
+      --card: #1c1c20;
+      --border: #2c2c34;
       --accent: #e5484d;
-      --text: #f1f1f3;
-      --muted: #8b8b99;
+      --accent-hover: #f05a5f;
+      --text: #f3f3f6;
+      --muted: #8e8e9c;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    body { background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; user-select: none; }
 
+    /* Top Bar */
     header {
-      padding: 12px 16px;
+      padding: 10px 14px;
       background: var(--card);
       border-bottom: 1px solid var(--border);
       display: flex;
-      justify-content: space-between;
       align-items: center;
-    }
-    .brand { font-weight: 700; font-size: 1.1rem; letter-spacing: -0.5px; }
-    .brand span { color: var(--accent); }
-    .status { font-size: 0.75rem; color: var(--muted); }
-
-    .layout { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
-    @media (min-width: 768px) { .layout { flex-direction: row; } }
-
-    /* Editor Area */
-    .editor-section {
-      flex: 1;
-      display: flex;
-      overflow-y: auto;
-      padding: 12px;
+      justify-content: space-between;
       gap: 10px;
     }
-    .syllables-rail {
-      width: 28px;
+    .header-left { display: flex; align-items: center; gap: 10px; flex: 1; overflow: hidden; }
+    .icon-btn {
+      background: #25252b;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .song-title-display {
+      font-weight: 600;
+      font-size: 15px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .version-tag {
+      font-size: 11px;
+      background: #2e2e38;
+      color: var(--muted);
+      padding: 2px 6px;
+      border-radius: 4px;
+      margin-left: 4px;
+    }
+    .btn-save { background: var(--accent); border: none; color: #fff; font-weight: 600; }
+
+    /* Main Workspace */
+    .editor-container {
+      flex: 1;
+      display: flex;
+      position: relative;
+      overflow: hidden;
+      padding: 12px 10px;
+      background: var(--bg);
+    }
+    .syllable-col {
+      width: 24px;
+      text-align: right;
       color: var(--muted);
       font-size: 12px;
       line-height: 24px;
-      text-align: right;
-      user-select: none;
-      padding-top: 2px;
+      padding-right: 6px;
+      border-right: 1px solid #222;
     }
     #lyrics-input {
       flex: 1;
@@ -57,61 +81,45 @@
       font-size: 15px;
       line-height: 24px;
       resize: none;
+      padding-left: 10px;
+      user-select: text;
       white-space: pre-wrap;
     }
 
-    /* Reference & Tools Drawer */
-    .toolbox {
-      height: 48%;
+    /* Floating Selection Popup */
+    #selection-rhyme-btn {
+      position: absolute;
+      display: none;
+      z-index: 50;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 18px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+      cursor: pointer;
+      transform: translate(-50%, -100%);
+    }
+
+    /* Bottom Rhymes Tray */
+    .rhyme-drawer {
+      height: 38%;
       background: var(--card);
       border-top: 1px solid var(--border);
       display: flex;
       flex-direction: column;
     }
-    @media (min-width: 768px) {
-      .toolbox { height: 100%; width: 380px; border-top: none; border-left: 1px solid var(--border); }
-    }
-
-    .search-row { display: flex; gap: 6px; padding: 10px; border-bottom: 1px solid var(--border); }
-    .search-row input {
-      flex: 1;
+    .drawer-header {
       padding: 8px 12px;
-      background: #111;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      color: #fff;
-      font-size: 14px;
-    }
-    .search-row select, .search-row button {
-      background: #2a2a30;
-      color: #fff;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       font-size: 13px;
     }
-    .search-row button { background: var(--accent); border: none; font-weight: 600; }
-
-    .filter-tabs {
-      display: flex;
-      gap: 6px;
-      padding: 8px 10px;
-      overflow-x: auto;
-      border-bottom: 1px solid var(--border);
-      white-space: nowrap;
-    }
-    .filter-btn {
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      color: var(--muted);
-      padding: 4px 10px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
-
-    .results-grid {
+    .drawer-chips {
       flex: 1;
       overflow-y: auto;
       padding: 10px;
@@ -120,151 +128,439 @@
       gap: 6px;
       align-content: flex-start;
     }
-    .word-chip {
-      background: #18181c;
+    .chip {
+      background: #25252b;
       border: 1px solid var(--border);
       padding: 6px 10px;
-      border-radius: 6px;
+      border-radius: 16px;
       font-size: 13px;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
+      cursor: pointer;
     }
-    .word-chip span { color: var(--muted); font-size: 10px; }
+    .chip span { color: var(--muted); font-size: 10px; margin-left: 4px; }
+    .chip:active { background: var(--accent); }
+
+    /* Songs Sidebar / Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .modal-overlay.active { display: flex; }
+    .modal-window {
+      background: var(--card);
+      width: 100%;
+      max-width: 400px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .modal-head {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-body { flex: 1; overflow-y: auto; padding: 8px; }
+
+    .song-item {
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      margin-bottom: 6px;
+      background: #18181c;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    .song-item.active { border-color: var(--accent); }
+    .song-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+
+    /* Dropdown for versions */
+    .version-popup {
+      position: fixed;
+      background: #25252c;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+      display: none;
+      z-index: 200;
+      min-width: 160px;
+      overflow: hidden;
+    }
+    .version-item {
+      padding: 10px 14px;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+    }
+    .version-item:hover, .version-item:active { background: #32323a; }
+
+    /* Toast */
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(20,20,22,0.95);
+      border: 1px solid var(--border);
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 12px;
+      color: #fff;
+      display: none;
+      z-index: 300;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
 
   <header>
-    <div class="brand">Mr. <span>Writer</span></div>
-    <div class="status" id="save-status">Saved</div>
+    <div class="header-left">
+      <button class="icon-btn" onclick="openSongsList()">Songs</button>
+      <span class="song-title-display" id="current-title">Untitled</span>
+      <span class="version-tag" id="current-version">v1</span>
+    </div>
+    <button class="icon-btn" onclick="newSongPrompt()">+ New</button>
+    <button class="icon-btn btn-save" onclick="promptSave()">Save</button>
   </header>
 
-  <div class="layout">
-    <div class="editor-section">
-      <div class="syllables-rail" id="syllables-rail">1</div>
-      <textarea id="lyrics-input" placeholder="Type or paste lyrics here... Select or double-tap a word to research it."></textarea>
+  <div class="editor-container" id="editor-wrap">
+    <div class="syllable-col" id="syllables">1</div>
+    <textarea id="lyrics-input" placeholder="Start typing lyrics... Double-tap or select a word to rhyme."></textarea>
+    <button id="selection-rhyme-btn">Rhymes</button>
+  </div>
+
+  <div class="rhyme-drawer">
+    <div class="drawer-header">
+      <span id="rhyme-target">Target: None</span>
+      <span style="color:var(--muted); font-size:11px;">Tap chip to copy to clipboard</span>
     </div>
+    <div class="drawer-chips" id="rhyme-results">
+      <span style="color:var(--muted); font-size:12px;">Select a word in your lyrics to search.</span>
+    </div>
+  </div>
 
-    <div class="toolbox">
-      <div class="search-row">
-        <input type="text" id="query" placeholder="Search reference...">
-        <button onclick="runSearch()">Find</button>
+  <!-- Songs Modal -->
+  <div class="modal-overlay" id="songs-modal">
+    <div class="modal-window">
+      <div class="modal-head">
+        <strong>Your Songs</strong>
+        <button class="icon-btn" onclick="closeSongsList()">Close</button>
       </div>
+      <div class="modal-body" id="song-list-content"></div>
+    </div>
+  </div>
 
-      <div class="filter-tabs">
-        <button class="filter-btn active" data-mode="rel_rhy">Rhymes</button>
-        <button class="filter-btn" data-mode="rel_nry">Near Rhymes</button>
-        <button class="filter-btn" data-mode="rel_syn">Synonyms</button>
-        <button class="filter-btn" data-mode="rel_trg">Associations</button>
-        <button class="filter-btn" data-mode="rel_bga">Phrases</button>
+  <!-- Long Press Version Dropdown -->
+  <div class="version-popup" id="version-menu"></div>
+
+  <!-- Save Options Action Sheet -->
+  <div class="modal-overlay" id="save-modal">
+    <div class="modal-window">
+      <div class="modal-head">
+        <strong>Save Options</strong>
+        <button class="icon-btn" onclick="closeSaveModal()">Cancel</button>
       </div>
-
-      <div class="results-grid" id="results">
-        <span style="color:var(--muted); font-size:13px;">Double-tap a word in your lyrics or search above.</span>
+      <div class="modal-body" style="display:flex; flex-direction:column; gap:8px; padding:16px;">
+        <button class="icon-btn" style="padding:12px;" onclick="executeSave('overwrite')">Overwrite Current Version</button>
+        <button class="icon-btn btn-save" style="padding:12px;" onclick="executeSave('new-version')">Save as New Version</button>
       </div>
     </div>
   </div>
 
+  <div id="toast"></div>
+
   <script>
+    // State Schema
+    let state = {
+      activeSongId: null,
+      activeVersionId: null,
+      songs: []
+    };
+
     const textarea = document.getElementById('lyrics-input');
-    const syllablesRail = document.getElementById('syllables-rail');
-    const saveStatus = document.getElementById('save-status');
-    const resultsGrid = document.getElementById('results');
-    const queryInput = document.getElementById('query');
-    let currentMode = 'rel_rhy';
+    const syllables = document.getElementById('syllables');
+    const floatBtn = document.getElementById('selection-rhyme-btn');
+    const rhymeTarget = document.getElementById('rhyme-target');
+    const rhymeResults = document.getElementById('rhyme-results');
+    const versionMenu = document.getElementById('version-menu');
+    let selectedWord = '';
 
-    // Load saved song
-    textarea.value = localStorage.getItem('mrwriter_lyrics') || '';
-    updateSyllables();
+    // Init Database from localStorage
+    function loadState() {
+      const data = localStorage.getItem('mrwriter_db');
+      if (data) {
+        state = JSON.parse(data);
+      } else {
+        const initialSong = {
+          id: 'song_' + Date.now(),
+          title: 'My First Song',
+          versions: [{ id: 'v_1', label: 'v1', content: 'Type your lyrics here...', timestamp: Date.now() }]
+        };
+        state.songs = [initialSong];
+        state.activeSongId = initialSong.id;
+        state.activeVersionId = 'v_1';
+        persist();
+      }
+      mountSong(state.activeSongId, state.activeVersionId);
+    }
 
-    // Naive syllable counter per line
-    function countWordSyllables(word) {
-      word = word.toLowerCase().replace(/[^a-z]/g, '');
-      if (!word) return 0;
-      if (word.length <= 3) return 1;
-      word = word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '');
-      word = word.replace(/^y/, '');
-      const match = word.match(/[aeiouy]{1,2}/g);
+    function persist() {
+      localStorage.setItem('mrwriter_db', JSON.stringify(state));
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.innerText = msg;
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 2000);
+    }
+
+    // Mount active song & version
+    function mountSong(songId, verId) {
+      const song = state.songs.find(s => s.id === songId);
+      if (!song) return;
+      state.activeSongId = songId;
+      const version = song.versions.find(v => v.id === verId) || song.versions[song.versions.length - 1];
+      state.activeVersionId = version.id;
+
+      document.getElementById('current-title').innerText = song.title;
+      document.getElementById('current-version').innerText = version.label;
+      textarea.value = version.content;
+      updateSyllables();
+      persist();
+    }
+
+    // Syllable Counter
+    function countWordSyllables(w) {
+      w = w.toLowerCase().replace(/[^a-z]/g, '');
+      if (!w) return 0;
+      if (w.length <= 3) return 1;
+      w = w.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '');
+      w = w.replace(/^y/, '');
+      const match = w.match(/[aeiouy]{1,2}/g);
       return match ? match.length : 1;
     }
 
     function updateSyllables() {
       const lines = textarea.value.split('\n');
-      syllablesRail.innerHTML = lines.map(line => {
+      syllables.innerHTML = lines.map(line => {
         if (!line.trim()) return '&nbsp;';
         const words = line.trim().split(/\s+/);
-        const count = words.reduce((acc, w) => acc + countWordSyllables(w), 0);
-        return count;
+        return words.reduce((acc, word) => acc + countWordSyllables(word), 0);
       }).join('<br>');
     }
 
-    // Auto-save and syllable update
-    let debounceTimer;
-    textarea.addEventListener('input', () => {
-      saveStatus.textContent = 'Editing...';
-      updateSyllables();
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
-        localStorage.setItem('mrwriter_lyrics', textarea.value);
-        saveStatus.textContent = 'Saved';
-      }, 700);
+    textarea.addEventListener('input', updateSyllables);
+
+    // Text Selection & Floating Rhyme Button
+    function evaluateSelection() {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      if (start !== end) {
+        const text = textarea.value.substring(start, end).trim();
+        if (text && !/\s/.test(text)) {
+          selectedWord = text.replace(/[^a-zA-Z]/g, '');
+          if (selectedWord) {
+            floatBtn.style.top = '20px';
+            floatBtn.style.left = '50%';
+            floatBtn.style.display = 'block';
+            return;
+          }
+        }
+      }
+      floatBtn.style.display = 'none';
+    }
+
+    textarea.addEventListener('mouseup', evaluateSelection);
+    textarea.addEventListener('touchend', () => setTimeout(evaluateSelection, 100));
+
+    floatBtn.addEventListener('click', () => {
+      floatBtn.style.display = 'none';
+      if (selectedWord) fetchRhymes(selectedWord);
     });
 
-    // Handle reference filter tab changes
-    document.querySelectorAll('.filter-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentMode = btn.dataset.mode;
-        if (queryInput.value.trim()) runSearch();
-      });
-    });
-
-    async function runSearch(manualTerm) {
-      const term = manualTerm || queryInput.value.trim();
-      if (!term) return;
-      queryInput.value = term;
-
-      resultsGrid.innerHTML = '<span style="color:var(--muted); font-size:13px;">Searching Mr. Writer index...</span>';
+    // Rhyme Fetching & Clipboard Copy
+    async function fetchRhymes(word) {
+      rhymeTarget.innerText = `Rhymes for: "${word}"`;
+      rhymeResults.innerHTML = '<span style="color:var(--muted); font-size:12px;">Loading rhymes...</span>';
 
       try {
-        const res = await fetch(`https://api.datamuse.com/words?${currentMode}=${encodeURIComponent(term)}&max=80`);
+        const res = await fetch(`https://api.datamuse.com/words?rel_rhy=${encodeURIComponent(word)}&max=60`);
         const data = await res.json();
-        resultsGrid.innerHTML = '';
+        rhymeResults.innerHTML = '';
 
         if (!data.length) {
-          resultsGrid.innerHTML = '<span style="color:var(--muted); font-size:13px;">No entries found.</span>';
+          rhymeResults.innerHTML = '<span style="color:var(--muted); font-size:12px;">No rhymes found.</span>';
           return;
         }
 
         data.forEach(item => {
           const chip = document.createElement('div');
-          chip.className = 'word-chip';
-          chip.innerHTML = `${item.word} <span>${item.numSyllables ? item.numSyllables + 's' : ''}</span>`;
-          chip.onclick = () => insertWord(item.word);
-          resultsGrid.appendChild(chip);
+          chip.className = 'chip';
+          chip.innerHTML = `${item.word} <span>${item.numSyllables || 1}s</span>`;
+          chip.onclick = () => {
+            navigator.clipboard.writeText(item.word).then(() => {
+              showToast(`Copied "${item.word}" to clipboard`);
+            }).catch(() => {
+              showToast(`Failed to copy`);
+            });
+          };
+          rhymeResults.appendChild(chip);
         });
-      } catch (e) {
-        resultsGrid.innerHTML = '<span style="color:var(--accent); font-size:13px;">Connection error.</span>';
+      } catch (err) {
+        rhymeResults.innerHTML = '<span style="color:var(--accent); font-size:12px;">Network error.</span>';
       }
     }
 
-    function insertWord(word) {
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const text = textarea.value;
-      textarea.value = text.substring(0, start) + word + text.substring(end);
-      textarea.selectionStart = textarea.selectionEnd = start + word.length;
-      textarea.focus();
-      updateSyllables();
+    // Save and Version Management
+    function promptSave() {
+      document.getElementById('save-modal').classList.add('active');
+    }
+    function closeSaveModal() {
+      document.getElementById('save-modal').classList.remove('active');
     }
 
-    // Lookup on select / double click
-    textarea.addEventListener('dblclick', () => {
-      const selection = window.getSelection().toString().trim();
-      if (selection) runSearch(selection);
+    function executeSave(type) {
+      const song = state.songs.find(s => s.id === state.activeSongId);
+      if (!song) return;
+
+      if (type === 'overwrite') {
+        const ver = song.versions.find(v => v.id === state.activeVersionId);
+        if (ver) {
+          ver.content = textarea.value;
+          ver.timestamp = Date.now();
+          showToast(`Saved (${ver.label} overwritten)`);
+        }
+      } else if (type === 'new-version') {
+        const newVerNum = song.versions.length + 1;
+        const newVer = {
+          id: 'v_' + Date.now(),
+          label: `v${newVerNum}`,
+          content: textarea.value,
+          timestamp: Date.now()
+        };
+        song.versions.push(newVer);
+        state.activeVersionId = newVer.id;
+        document.getElementById('current-version').innerText = newVer.label;
+        showToast(`Saved as new version (v${newVerNum})`);
+      }
+      persist();
+      closeSaveModal();
+    }
+
+    function newSongPrompt() {
+      const title = prompt('Song title:');
+      if (!title || !title.trim()) return;
+      const newSong = {
+        id: 'song_' + Date.now(),
+        title: title.trim(),
+        versions: [{ id: 'v_' + Date.now(), label: 'v1', content: '', timestamp: Date.now() }]
+      };
+      state.songs.unshift(newSong);
+      mountSong(newSong.id, newSong.versions[0].id);
+      showToast(`Created "${newSong.title}"`);
+    }
+
+    // Songs Modal & Long Press Implementation
+    function openSongsList() {
+      const container = document.getElementById('song-list-content');
+      container.innerHTML = '';
+
+      state.songs.forEach(song => {
+        const row = document.createElement('div');
+        row.className = `song-item ${song.id === state.activeSongId ? 'active' : ''}`;
+        row.innerHTML = `
+          <div>
+            <strong>${song.title}</strong>
+            <div class="song-meta">${song.versions.length} version${song.versions.length > 1 ? 's' : ''}</div>
+          </div>
+          <span style="font-size:11px; color:var(--muted);">${song.versions[song.versions.length - 1].label}</span>
+        `;
+
+        // Long Press Logic for Versions Menu
+        let pressTimer;
+        const startPress = (e) => {
+          pressTimer = setTimeout(() => {
+            triggerVersionMenu(song, e);
+          }, 500);
+        };
+        const cancelPress = () => clearTimeout(pressTimer);
+
+        row.addEventListener('touchstart', startPress, { passive: true });
+        row.addEventListener('touchend', cancelPress);
+        row.addEventListener('touchmove', cancelPress);
+        row.addEventListener('mousedown', startPress);
+        row.addEventListener('mouseup', cancelPress);
+        row.addEventListener('mouseleave', cancelPress);
+
+        // Standard tap to open default
+        row.addEventListener('click', (e) => {
+          if (!row.dataset.longPressed) {
+            mountSong(song.id, song.versions[song.versions.length - 1].id);
+            closeSongsList();
+          }
+          delete row.dataset.longPressed;
+        });
+
+        container.appendChild(row);
+      });
+
+      document.getElementById('songs-modal').classList.add('active');
+    }
+
+    function closeSongsList() {
+      document.getElementById('songs-modal').classList.remove('active');
+      versionMenu.style.display = 'none';
+    }
+
+    function triggerVersionMenu(song, event) {
+      const touch = event.touches ? event.touches[0] : event;
+      versionMenu.innerHTML = '';
+      
+      const header = document.createElement('div');
+      header.style.padding = '8px 12px';
+      header.style.fontSize = '11px';
+      header.style.color = 'var(--muted)';
+      header.innerText = `${song.title} - Select Version`;
+      versionMenu.appendChild(header);
+
+      song.versions.forEach(v => {
+        const item = document.createElement('div');
+        item.className = 'version-item';
+        item.innerHTML = `<strong>${v.label}</strong> <span style="font-size:11px; color:var(--muted); margin-left:6px;">${new Date(v.timestamp).toLocaleDateString()}</span>`;
+        item.onclick = (e) => {
+          e.stopPropagation();
+          mountSong(song.id, v.id);
+          versionMenu.style.display = 'none';
+          closeSongsList();
+        };
+        versionMenu.appendChild(item);
+      });
+
+      versionMenu.style.left = `${Math.min(touch.clientX, window.innerWidth - 180)}px`;
+      versionMenu.style.top = `${Math.min(touch.clientY, window.innerHeight - 200)}px`;
+      versionMenu.style.display = 'block';
+    }
+
+    // Close version menu on background tap
+    window.addEventListener('click', (e) => {
+      if (!versionMenu.contains(e.target)) versionMenu.style.display = 'none';
     });
+
+    // Start App
+    loadState();
   </script>
 </body>
 </html>
