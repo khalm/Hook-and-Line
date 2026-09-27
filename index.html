@@ -13,6 +13,7 @@
       --border-light: #3a3d4d;
       --accent: #d9383a;
       --chord-color: #a0a4b5;
+      --section-color: #ffd166;
       --text: #f0f1f5;
       --muted: #8b8ea0;
     }
@@ -130,16 +131,26 @@
       min-height: 80px;
     }
     .meter-rail {
-      width: 34px;
+      width: 38px;
       background: rgba(0,0,0,0.25);
       border-right: 1px solid var(--border);
       color: var(--muted);
       font-size: 11px;
       font-family: monospace;
-      line-height: 38px;
       text-align: right;
-      padding: 14px 6px 0 0;
+      padding: 14px 8px 0 0;
       user-select: none;
+      overflow: hidden;
+    }
+    .meter-item {
+      display: block;
+      height: 38px;
+      line-height: 38px;
+    }
+    .meter-item.section-spacer {
+      height: 24px;
+      line-height: 24px;
+      color: transparent;
     }
 
     #editor-content {
@@ -154,6 +165,29 @@
       word-break: break-word;
       user-select: text;
       -webkit-user-select: text;
+    }
+
+    /* Section Header Pills */
+    .section-header-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      margin: 10px 0 2px 0;
+      padding: 2px 8px;
+      background: rgba(255, 209, 102, 0.12);
+      border: 1px solid rgba(255, 209, 102, 0.35);
+      color: var(--section-color);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      border-radius: 4px;
+      line-height: 16px;
+      user-select: none;
+      cursor: pointer;
+    }
+    .section-header-tag:hover {
+      background: rgba(255, 209, 102, 0.22);
     }
 
     /* Inline Placed Chords */
@@ -192,22 +226,30 @@
       box-shadow: 0 0 8px rgba(217, 56, 58, 0.7);
     }
 
-    /* Rhyme Floating Action Pin */
-    #selection-rhyme-btn {
+    /* Floating Action Pin Container */
+    .floating-actions {
       position: absolute;
       top: 10px;
       right: 14px;
       display: none;
       z-index: 100;
+      gap: 6px;
+    }
+    .floating-btn {
       background: var(--accent);
       color: #fff;
       border: 1px solid #ff7b80;
       border-radius: 18px;
-      padding: 8px 16px;
-      font-size: 13px;
+      padding: 8px 14px;
+      font-size: 12px;
       font-weight: 700;
       box-shadow: 0 4px 16px rgba(0,0,0,0.8);
       cursor: pointer;
+    }
+    .floating-btn-tag {
+      background: #2a2510;
+      border-color: var(--section-color);
+      color: var(--section-color);
     }
 
     /* Resizable Reference Drawer */
@@ -222,7 +264,6 @@
       position: relative;
     }
 
-    /* Draggable Splitter Handle */
     .resize-handle {
       width: 100%;
       height: 18px;
@@ -244,9 +285,7 @@
       background: var(--border-light);
       border-radius: 2px;
     }
-    .resize-handle:active::after {
-      background: var(--accent);
-    }
+    .resize-handle:active::after { background: var(--accent); }
 
     .search-dock { padding: 8px 12px; border-bottom: 1px solid var(--border); display: flex; gap: 6px; align-items: center; }
     .search-dock input {
@@ -339,9 +378,10 @@
 
     @media print {
       body { background: #fff !important; color: #000 !important; }
-      header, .chord-strip-container, .meter-rail, .reference-suite, #selection-rhyme-btn, .overlay, .popover-menu, #toast { display: none !important; }
+      header, .chord-strip-container, .meter-rail, .reference-suite, .floating-actions, .overlay, .popover-menu, #toast { display: none !important; }
       #editor-content { display: none !important; }
       #all-songs-print-container { display: block !important; padding: 0 !important; }
+      .section-header-tag { color: #885e00 !important; background: transparent !important; border: 1px solid #885e00 !important; font-size: 11px !important; }
       .chord-print-label { color: #555 !important; font-size: 11px !important; font-weight: 700 !important; font-family: monospace !important; }
       .lyric-print-text { color: #000 !important; font-size: 15px !important; }
     }
@@ -386,18 +426,20 @@
     <div class="editor-section">
       <div class="meter-rail" id="meter-rail"></div>
       
-      <!-- ContentEditable Visual Studio Editor -->
+      <!-- ContentEditable Studio Editor -->
       <div id="editor-content" contenteditable="true" spellcheck="false"></div>
 
-      <!-- Quick Action Pin -->
-      <button id="selection-rhyme-btn">Find Rhymes</button>
+      <!-- Floating Action Buttons -->
+      <div class="floating-actions" id="floating-actions">
+        <button class="floating-btn" id="find-rhymes-btn">Find Rhymes</button>
+        <button class="floating-btn floating-btn-tag" onclick="openTagModal()">+ Tag Section</button>
+      </div>
 
       <div id="all-songs-print-container"></div>
     </div>
 
-    <!-- Resizable MasterWriter Reference Drawer -->
+    <!-- Resizable Reference Drawer -->
     <div class="reference-suite" id="reference-suite">
-      <!-- Tactile Drag Handle -->
       <div class="resize-handle" id="resize-handle" title="Drag up or down to resize"></div>
 
       <div class="search-dock">
@@ -415,6 +457,23 @@
 
       <div class="dictionary-feed" id="dictionary-feed">
         <span style="color:var(--muted); font-size:12px;">Mark or select any word to load reference.</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section Tagging Modal -->
+  <div class="overlay" id="tag-modal">
+    <div class="dialog" style="max-width:320px;">
+      <div class="dialog-header">
+        <strong>Tag Section</strong>
+        <button class="btn" onclick="closeTagModal()">Cancel</button>
+      </div>
+      <div class="dialog-body" style="display:flex; flex-direction:column; gap:8px; padding:14px;">
+        <button class="btn" style="padding:10px; justify-content:flex-start;" onclick="applySectionTag('verse')">Verse (Auto-numbered)</button>
+        <button class="btn" style="padding:10px; justify-content:flex-start;" onclick="applySectionTag('pre-chorus')">Pre-Chorus</button>
+        <button class="btn" style="padding:10px; justify-content:flex-start;" onclick="applySectionTag('chorus')">Chorus</button>
+        <button class="btn" style="padding:10px; justify-content:flex-start;" onclick="applySectionTag('bridge')">Bridge</button>
+        <button class="btn btn-accent" style="padding:10px; justify-content:flex-start;" onclick="promptCustomTag()">+ Custom Tag...</button>
       </div>
     </div>
   </div>
@@ -471,7 +530,8 @@
 
     const editor = document.getElementById('editor-content');
     const meterRail = document.getElementById('meter-rail');
-    const floatBtn = document.getElementById('selection-rhyme-btn');
+    const floatActions = document.getElementById('floating-actions');
+    const findRhymesBtn = document.getElementById('find-rhymes-btn');
     const queryField = document.getElementById('query-field');
     const dictFeed = document.getElementById('dictionary-feed');
     const versionPopover = document.getElementById('version-popover');
@@ -483,7 +543,7 @@
     let selectedWord = '';
 
     function init() {
-      const stored = localStorage.getItem('mrwriter_v17');
+      const stored = localStorage.getItem('mrwriter_v18');
       if (stored) {
         state = JSON.parse(stored);
       } else {
@@ -493,7 +553,7 @@
           versions: [{
             id: 'v_1',
             label: 'v1',
-            html: '<span class="chord-badge" contenteditable="false" data-chord="G"><span class="chord-badge-inner">G</span></span>We all came out to <span class="chord-badge" contenteditable="false" data-chord="F"><span class="chord-badge-inner">F</span></span>Montreux<br>On the <span class="chord-badge" contenteditable="false" data-chord="G"><span class="chord-badge-inner">G</span></span>shoreline drafting songs',
+            html: '<div class="section-header-tag" contenteditable="false" data-type="verse">Verse 1</div><div><span class="chord-badge" contenteditable="false" data-chord="G"><span class="chord-badge-inner">G</span></span>We all came out to <span class="chord-badge" contenteditable="false" data-chord="F"><span class="chord-badge-inner">F</span></span>Montreux</div><div>On the <span class="chord-badge" contenteditable="false" data-chord="G"><span class="chord-badge-inner">G</span></span>shoreline drafting songs</div>',
             updatedAt: Date.now()
           }]
         };
@@ -512,17 +572,13 @@
         chordCollapseBtn.innerText = 'Show ▼';
       }
 
-      // Restore custom drawer height
       const savedHeight = localStorage.getItem('mrwriter_drawer_height');
-      if (savedHeight) {
-        referenceSuite.style.height = savedHeight;
-      }
+      if (savedHeight) referenceSuite.style.height = savedHeight;
 
       initResizableDrawer();
       loadSong(state.activeSongId, state.activeVersionId);
     }
 
-    // Draggable Resizing of Reference Drawer
     function initResizableDrawer() {
       let isDragging = false;
       let startY = 0;
@@ -541,7 +597,6 @@
         const newHeight = startHeight + delta;
         const workspaceHeight = workspace.getBoundingClientRect().height;
 
-        // Min 15% and Max 85% of workspace height
         const minHeight = workspaceHeight * 0.15;
         const maxHeight = workspaceHeight * 0.85;
 
@@ -559,28 +614,13 @@
         }
       };
 
-      // Touch events
-      resizeHandle.addEventListener('touchstart', (e) => {
-        startDrag(e.touches[0].clientY);
-      }, { passive: true });
-
-      window.addEventListener('touchmove', (e) => {
-        if (isDragging) doDrag(e.touches[0].clientY);
-      }, { passive: false });
-
+      resizeHandle.addEventListener('touchstart', (e) => startDrag(e.touches[0].clientY), { passive: true });
+      window.addEventListener('touchmove', (e) => { if (isDragging) doDrag(e.touches[0].clientY); }, { passive: false });
       window.addEventListener('touchend', stopDrag);
       window.addEventListener('touchcancel', stopDrag);
 
-      // Mouse events
-      resizeHandle.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        startDrag(e.clientY);
-      });
-
-      window.addEventListener('mousemove', (e) => {
-        if (isDragging) doDrag(e.clientY);
-      });
-
+      resizeHandle.addEventListener('mousedown', (e) => { e.preventDefault(); startDrag(e.clientY); });
+      window.addEventListener('mousemove', (e) => { if (isDragging) doDrag(e.clientY); });
       window.addEventListener('mouseup', stopDrag);
     }
 
@@ -591,7 +631,7 @@
     }
 
     function saveState() {
-      localStorage.setItem('mrwriter_v17', JSON.stringify(state));
+      localStorage.setItem('mrwriter_v18', JSON.stringify(state));
     }
 
     function showToast(text) {
@@ -621,8 +661,10 @@
       document.getElementById('active-version-tag').innerText = ver.label;
       document.title = song.title;
 
-      editor.innerHTML = ver.html || 'Start typing your lyrics...';
+      editor.innerHTML = ver.html || '<div>Start typing your lyrics...</div>';
       bindChordListeners();
+      bindSectionTagListeners();
+      renumberVerses();
       updateMeter();
       saveState();
     }
@@ -643,6 +685,34 @@
       });
     }
 
+    function bindSectionTagListeners() {
+      editor.querySelectorAll('.section-header-tag').forEach(tag => {
+        tag.onclick = (e) => {
+          e.stopPropagation();
+          const action = prompt(`Edit section name or type "delete" to remove:`, tag.innerText);
+          if (action === null) return;
+          if (action.toLowerCase().trim() === 'delete' || action.trim() === '') {
+            tag.remove();
+          } else {
+            tag.innerText = action.trim();
+          }
+          renumberVerses();
+          updateMeter();
+        };
+      });
+    }
+
+    // Auto-number verses sequentially (Verse 1, Verse 2, Verse 3...)
+    function renumberVerses() {
+      let verseCount = 1;
+      editor.querySelectorAll('.section-header-tag').forEach(tag => {
+        if (tag.dataset.type === 'verse' || /^verse(\s+\d+)?$/i.test(tag.innerText.trim())) {
+          tag.dataset.type = 'verse';
+          tag.innerText = `Verse ${verseCount++}`;
+        }
+      });
+    }
+
     function saveCurrentRange() {
       const sel = window.getSelection();
       if (sel && sel.rangeCount > 0) {
@@ -650,6 +720,7 @@
       }
     }
 
+    // Mobile-optimized text selection monitoring
     let selectionTimeout = null;
     document.addEventListener('selectionchange', () => {
       clearTimeout(selectionTimeout);
@@ -659,7 +730,7 @@
 
         const anchor = sel.anchorNode;
         if (!anchor || !editor.contains(anchor)) {
-          floatBtn.style.display = 'none';
+          floatActions.style.display = 'none';
           return;
         }
 
@@ -670,18 +741,133 @@
           const cleanTerm = markedText.replace(/[^a-zA-Z\s]/g, '').trim();
           if (cleanTerm.length > 1) {
             selectedWord = cleanTerm;
-            floatBtn.innerText = `Rhymes for "${selectedWord}"`;
-            floatBtn.style.display = 'block';
+            findRhymesBtn.innerText = `Rhymes: "${selectedWord.slice(0, 10)}${selectedWord.length > 10 ? '...' : ''}"`;
             executeLookup(selectedWord);
-            return;
           }
+          floatActions.style.display = 'flex';
+          return;
         }
-        floatBtn.style.display = 'none';
+        floatActions.style.display = 'none';
       }, 150);
     });
 
-    editor.addEventListener('input', () => { updateMeter(); });
+    editor.addEventListener('input', () => { 
+      renumberVerses();
+      updateMeter(); 
+    });
 
+    // Section Tagging Logic
+    function openTagModal() {
+      document.getElementById('tag-modal').classList.add('active');
+    }
+    function closeTagModal() {
+      document.getElementById('tag-modal').classList.remove('active');
+    }
+
+    function applySectionTag(type, customLabel) {
+      closeTagModal();
+      floatActions.style.display = 'none';
+
+      let range = savedSelectionRange;
+      if (!range) {
+        const sel = window.getSelection();
+        if (sel.rangeCount > 0) range = sel.getRangeAt(0);
+      }
+
+      const tag = document.createElement('div');
+      tag.className = 'section-header-tag';
+      tag.contentEditable = 'false';
+      tag.dataset.type = type;
+
+      if (type === 'verse') {
+        tag.innerText = 'Verse';
+      } else if (type === 'pre-chorus') {
+        tag.innerText = 'Pre-Chorus';
+      } else if (type === 'chorus') {
+        tag.innerText = 'Chorus';
+      } else if (type === 'bridge') {
+        tag.innerText = 'Bridge';
+      } else {
+        tag.innerText = customLabel || 'Section';
+      }
+
+      if (range) {
+        // Find topmost container element or insert at start of selection
+        let container = range.startContainer;
+        if (container.nodeType === 3) container = container.parentNode;
+        
+        while (container && container.parentNode !== editor && container !== editor) {
+          container = container.parentNode;
+        }
+
+        if (container && container !== editor) {
+          editor.insertBefore(tag, container);
+        } else {
+          range.insertNode(tag);
+        }
+      } else {
+        editor.prepend(tag);
+      }
+
+      bindSectionTagListeners();
+      renumberVerses();
+      updateMeter();
+      showToast(`Added ${tag.innerText} tag`);
+    }
+
+    function promptCustomTag() {
+      const custom = prompt('Enter custom section name (e.g. Outro, Solo, Intro):');
+      if (custom && custom.trim()) {
+        applySectionTag('custom', custom.trim());
+      }
+    }
+
+    // Accurate 1:1 Line Syllable Counter
+    function countSyllables(word) {
+      word = word.toLowerCase().replace(/[^a-z]/g, '');
+      if (!word) return 0;
+      if (word.length <= 3) return 1;
+      word = word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '');
+      word = word.replace(/^y/, '');
+      const m = word.match(/[aeiouy]{1,2}/g);
+      return m ? m.length : 1;
+    }
+
+    function updateMeter() {
+      // Clone editor and strip chord tags
+      const clone = editor.cloneNode(true);
+      clone.querySelectorAll('.chord-badge').forEach(b => b.remove());
+
+      // Parse line units including section headers
+      let itemsHtml = '';
+
+      Array.from(clone.childNodes).forEach(node => {
+        // Section tag line spacer
+        if (node.classList && node.classList.contains('section-header-tag')) {
+          itemsHtml += '<div class="meter-item section-spacer">·</div>';
+          return;
+        }
+
+        const text = (node.innerText !== undefined ? node.innerText : node.textContent) || '';
+        const lines = text.split('\n');
+
+        lines.forEach((lineText, idx) => {
+          if (idx > 0 && lineText === '' && lines.length === 2) return; // Ignore trailing block split newline
+          const clean = lineText.trim();
+          if (!clean) {
+            itemsHtml += '<div class="meter-item">·</div>';
+          } else {
+            const words = clean.split(/\s+/);
+            const count = words.reduce((sum, w) => sum + countSyllables(w), 0);
+            itemsHtml += `<div class="meter-item">${count}</div>`;
+          }
+        });
+      });
+
+      meterRail.innerHTML = itemsHtml || '<div class="meter-item">·</div>';
+    }
+
+    // Chords Management
     function insertChordAtCursor(chord) {
       if (selectedChordElem) {
         selectedChordElem.dataset.chord = chord;
@@ -695,7 +881,6 @@
 
       editor.focus();
       let range = savedSelectionRange;
-
       if (!range) {
         const sel = window.getSelection();
         if (sel.rangeCount > 0) range = sel.getRangeAt(0);
@@ -749,38 +934,15 @@
       }
     });
 
-    function countSyllables(word) {
-      word = word.toLowerCase().replace(/[^a-z]/g, '');
-      if (!word) return 0;
-      if (word.length <= 3) return 1;
-      word = word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '');
-      word = word.replace(/^y/, '');
-      const m = word.match(/[aeiouy]{1,2}/g);
-      return m ? m.length : 1;
-    }
-
-    function updateMeter() {
-      const clone = editor.cloneNode(true);
-      clone.querySelectorAll('.chord-badge').forEach(b => b.remove());
-      const rawText = clone.innerText || '';
-
-      const lines = rawText.split('\n');
-      meterRail.innerHTML = lines.map(line => {
-        const clean = line.trim();
-        if (!clean) return '&nbsp;';
-        const words = clean.split(/\s+/);
-        return words.reduce((sum, w) => sum + countSyllables(w), 0);
-      }).join('<br>');
-    }
-
-    floatBtn.addEventListener('click', () => {
+    findRhymesBtn.addEventListener('click', () => {
       if (selectedWord) {
         executeLookup(selectedWord);
         document.getElementById('reference-suite').scrollIntoView({ behavior: 'smooth' });
       }
-      floatBtn.style.display = 'none';
+      floatActions.style.display = 'none';
     });
 
+    // Reference Engine (Datamuse)
     document.querySelectorAll('.category-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
@@ -888,6 +1050,7 @@
       }
     }
 
+    // Save & Versioning
     function openSaveDialog() { document.getElementById('save-overlay').classList.add('active'); }
     function closeSaveDialog() { document.getElementById('save-overlay').classList.remove('active'); }
 
@@ -929,7 +1092,7 @@
       const newSong = {
         id: 's_' + Date.now(),
         title: name,
-        versions: [{ id: 'v_' + Date.now(), label: 'v1', html: 'Start typing lyrics...', updatedAt: Date.now() }]
+        versions: [{ id: 'v_' + Date.now(), label: 'v1', html: '<div>Start typing lyrics...</div>', updatedAt: Date.now() }]
       };
       state.songs.unshift(newSong);
       loadSong(newSong.id, newSong.versions[0].id);
