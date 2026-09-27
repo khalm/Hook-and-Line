@@ -3,7 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title id="page-title">Mr. Writer Studio</title>
+  <title id="page-title">Hook & Line</title>
+
+  <!-- PWA & App Icons -->
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="android-pwa-192.png">
+  <link rel="apple-touch-icon" href="android-playstore-512.png">
+  <meta name="theme-color" content="#18191e">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
   <style>
     :root {
       --bg: #0f1013;
@@ -20,6 +29,44 @@
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+    /* Splash Screen Overlay */
+    #splash-screen {
+      position: fixed;
+      inset: 0;
+      background: #0f1013;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      transition: opacity 0.4s ease-out, visibility 0.4s ease-out;
+    }
+    #splash-screen.fade-out {
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+    }
+    .splash-logo {
+      width: 96px;
+      height: 96px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+      object-fit: cover;
+    }
+    .splash-title {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      color: #fff;
+    }
+    .splash-title span { color: var(--accent); }
+    .splash-tagline {
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+    }
 
     /* Top Studio Bar */
     header {
@@ -378,7 +425,7 @@
 
     @media print {
       body { background: #fff !important; color: #000 !important; }
-      header, .chord-strip-container, .meter-rail, .reference-suite, .floating-actions, .overlay, .popover-menu, #toast { display: none !important; }
+      header, .chord-strip-container, .meter-rail, .reference-suite, .floating-actions, .overlay, .popover-menu, #toast, #splash-screen { display: none !important; }
       #editor-content { display: none !important; }
       #all-songs-print-container { display: block !important; padding: 0 !important; }
       .section-header-tag { color: #885e00 !important; background: transparent !important; border: 1px solid #885e00 !important; font-size: 11px !important; }
@@ -389,9 +436,16 @@
 </head>
 <body>
 
+  <!-- 1500ms Splash Screen -->
+  <div id="splash-screen">
+    <img src="android-playstore-512.png" alt="Hook & Line" class="splash-logo" onerror="this.style.display='none'">
+    <div class="splash-title">Hook <span>&</span> Line</div>
+    <div class="splash-tagline">Songwriting & Lyric Studio</div>
+  </div>
+
   <header>
     <div class="header-left">
-      <div class="brand">Mr.<span>Writer</span></div>
+      <div class="brand">Hook <span>&</span> Line</div>
       <div class="song-pill" onclick="openSongCatalog()">
         <span class="song-title-text" id="active-title">Untitled</span>
         <span class="version-tag" id="active-version-tag">v1</span>
@@ -403,7 +457,7 @@
     </div>
   </header>
 
-  <!-- Collapsible Chords Strip -->
+  <!-- Collapsible Chords Strip: Collapsed by Default -->
   <div class="chord-strip-container collapsed" id="chord-strip-container">
     <div class="chord-strip-header" onclick="toggleChordsCollapse()">
       <span>Quick Chords (Place cursor anywhere in lyrics, tap a chord)</span>
@@ -438,7 +492,7 @@
       <div id="all-songs-print-container"></div>
     </div>
 
-    <!-- Resizable Reference Drawer -->
+    <!-- Resizable MasterWriter Reference Drawer -->
     <div class="reference-suite" id="reference-suite">
       <div class="resize-handle" id="resize-handle" title="Drag up or down to resize"></div>
 
@@ -540,10 +594,19 @@
     const referenceSuite = document.getElementById('reference-suite');
     const resizeHandle = document.getElementById('resize-handle');
     const workspace = document.getElementById('workspace');
+    const splashScreen = document.getElementById('splash-screen');
     let selectedWord = '';
 
+    // Exactly 1500ms Splash Screen duration
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        splashScreen.classList.add('fade-out');
+        setTimeout(() => splashScreen.remove(), 400);
+      }, 1500);
+    });
+
     function init() {
-      const stored = localStorage.getItem('mrwriter_v18');
+      const stored = localStorage.getItem('hookandline_db');
       if (stored) {
         state = JSON.parse(stored);
       } else {
@@ -563,7 +626,7 @@
         saveState();
       }
 
-      const isSavedCollapsed = localStorage.getItem('mrwriter_chords_collapsed');
+      const isSavedCollapsed = localStorage.getItem('hookandline_chords_collapsed');
       if (isSavedCollapsed === 'false') {
         chordContainer.classList.remove('collapsed');
         chordCollapseBtn.innerText = 'Hide ▲';
@@ -572,7 +635,7 @@
         chordCollapseBtn.innerText = 'Show ▼';
       }
 
-      const savedHeight = localStorage.getItem('mrwriter_drawer_height');
+      const savedHeight = localStorage.getItem('hookandline_drawer_height');
       if (savedHeight) referenceSuite.style.height = savedHeight;
 
       initResizableDrawer();
@@ -603,7 +666,7 @@
         if (newHeight >= minHeight && newHeight <= maxHeight) {
           const heightPx = `${newHeight}px`;
           referenceSuite.style.height = heightPx;
-          localStorage.setItem('mrwriter_drawer_height', heightPx);
+          localStorage.setItem('hookandline_drawer_height', heightPx);
         }
       };
 
@@ -627,11 +690,11 @@
     function toggleChordsCollapse() {
       const isCollapsed = chordContainer.classList.toggle('collapsed');
       chordCollapseBtn.innerText = isCollapsed ? 'Show ▼' : 'Hide ▲';
-      localStorage.setItem('mrwriter_chords_collapsed', isCollapsed ? 'true' : 'false');
+      localStorage.setItem('hookandline_chords_collapsed', isCollapsed ? 'true' : 'false');
     }
 
     function saveState() {
-      localStorage.setItem('mrwriter_v18', JSON.stringify(state));
+      localStorage.setItem('hookandline_db', JSON.stringify(state));
     }
 
     function showToast(text) {
@@ -659,7 +722,7 @@
 
       document.getElementById('active-title').innerText = song.title;
       document.getElementById('active-version-tag').innerText = ver.label;
-      document.title = song.title;
+      document.title = song.title + ' — Hook & Line';
 
       editor.innerHTML = ver.html || '<div>Start typing your lyrics...</div>';
       bindChordListeners();
@@ -702,7 +765,6 @@
       });
     }
 
-    // Auto-number verses sequentially (Verse 1, Verse 2, Verse 3...)
     function renumberVerses() {
       let verseCount = 1;
       editor.querySelectorAll('.section-header-tag').forEach(tag => {
@@ -720,7 +782,6 @@
       }
     }
 
-    // Mobile-optimized text selection monitoring
     let selectionTimeout = null;
     document.addEventListener('selectionchange', () => {
       clearTimeout(selectionTimeout);
@@ -756,7 +817,6 @@
       updateMeter(); 
     });
 
-    // Section Tagging Logic
     function openTagModal() {
       document.getElementById('tag-modal').classList.add('active');
     }
@@ -792,7 +852,6 @@
       }
 
       if (range) {
-        // Find topmost container element or insert at start of selection
         let container = range.startContainer;
         if (container.nodeType === 3) container = container.parentNode;
         
@@ -812,7 +871,7 @@
       bindSectionTagListeners();
       renumberVerses();
       updateMeter();
-      showToast(`Added ${tag.innerText} tag`);
+      showToast(`Added ${tag.innerText}`);
     }
 
     function promptCustomTag() {
@@ -822,7 +881,6 @@
       }
     }
 
-    // Accurate 1:1 Line Syllable Counter
     function countSyllables(word) {
       word = word.toLowerCase().replace(/[^a-z]/g, '');
       if (!word) return 0;
@@ -834,15 +892,12 @@
     }
 
     function updateMeter() {
-      // Clone editor and strip chord tags
       const clone = editor.cloneNode(true);
       clone.querySelectorAll('.chord-badge').forEach(b => b.remove());
 
-      // Parse line units including section headers
       let itemsHtml = '';
 
       Array.from(clone.childNodes).forEach(node => {
-        // Section tag line spacer
         if (node.classList && node.classList.contains('section-header-tag')) {
           itemsHtml += '<div class="meter-item section-spacer">·</div>';
           return;
@@ -852,7 +907,7 @@
         const lines = text.split('\n');
 
         lines.forEach((lineText, idx) => {
-          if (idx > 0 && lineText === '' && lines.length === 2) return; // Ignore trailing block split newline
+          if (idx > 0 && lineText === '' && lines.length === 2) return;
           const clean = lineText.trim();
           if (!clean) {
             itemsHtml += '<div class="meter-item">·</div>';
@@ -867,7 +922,6 @@
       meterRail.innerHTML = itemsHtml || '<div class="meter-item">·</div>';
     }
 
-    // Chords Management
     function insertChordAtCursor(chord) {
       if (selectedChordElem) {
         selectedChordElem.dataset.chord = chord;
@@ -942,7 +996,6 @@
       floatActions.style.display = 'none';
     });
 
-    // Reference Engine (Datamuse)
     document.querySelectorAll('.category-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
@@ -1050,7 +1103,6 @@
       }
     }
 
-    // Save & Versioning
     function openSaveDialog() { document.getElementById('save-overlay').classList.add('active'); }
     function closeSaveDialog() { document.getElementById('save-overlay').classList.remove('active'); }
 
@@ -1170,7 +1222,7 @@
       const originalTitle = document.title;
       document.title = selectedSongIds.size === 1 
         ? (state.songs.find(s => selectedSongIds.has(s.id))?.title || 'Song')
-        : 'Mr_Writer_Selection';
+        : 'Hook_and_Line_Selection';
 
       const targetSongs = state.songs.filter(s => selectedSongIds.has(s.id));
       const printContainer = document.getElementById('all-songs-print-container');
