@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title id="page-title">Hook & Line</title>
 
-  <!-- PWA & App Icons -->
+  <!-- PWA & Adaptive App Icons -->
   <link rel="manifest" href="manifest.json">
   <link rel="icon" type="image/png" sizes="192x192" href="android-pwa-192.png">
   <link rel="icon" type="image/png" sizes="32x32" href="android-pwa-192.png">
@@ -217,7 +217,7 @@
       position: relative;
     }
 
-    /* Clean Pure CSS Dummy Placeholder (never enters actual text or breaks caret) */
+    /* Dummy Placeholder */
     #editor-content:empty::before {
       content: attr(data-placeholder);
       color: var(--muted);
@@ -468,7 +468,7 @@
     </div>
   </header>
 
-  <!-- Collapsible Chords Strip: Collapsed by Default -->
+  <!-- Collapsible Chords Strip -->
   <div class="chord-strip-container collapsed" id="chord-strip-container">
     <div class="chord-strip-header" onclick="toggleChordsCollapse()">
       <span>Quick Chords (Place cursor anywhere in lyrics, tap a chord)</span>
@@ -714,7 +714,6 @@
       setTimeout(() => { t.style.display = 'none'; }, 2000);
     }
 
-    // Sanitize any previous literal placeholder strings so they don't persist as user text
     function sanitizeEditorHTML(rawHtml) {
       if (!rawHtml) return '';
       let clean = rawHtml.replace(/Start typing lyrics\.{3}/gi, '');
