@@ -217,9 +217,8 @@
       position: relative;
     }
 
-    /* Modern Placeholder behavior */
-    #editor-content:empty::before,
-    #editor-content.show-placeholder::before {
+    /* Clean Pure CSS Dummy Placeholder (never enters actual text or breaks caret) */
+    #editor-content:empty::before {
       content: attr(data-placeholder);
       color: var(--muted);
       pointer-events: none;
@@ -459,7 +458,7 @@
     <div class="header-left">
       <div class="brand">Hook <span>&</span> Line</div>
       <div class="song-pill" onclick="openSongCatalog()">
-        <span class="song-title-text" id="active-title">Untitled</span>
+        <span class="song-title-text" id="active-title">Untitled Song 1</span>
         <span class="version-tag" id="active-version-tag">v1</span>
       </div>
     </div>
@@ -492,7 +491,7 @@
     <div class="editor-section">
       <div class="meter-rail" id="meter-rail"></div>
       
-      <!-- ContentEditable Studio Editor -->
+      <!-- ContentEditable Studio Editor with dynamic dummy placeholder -->
       <div id="editor-content" contenteditable="true" spellcheck="false" data-placeholder="Start typing lyrics..."></div>
 
       <!-- Floating Action Buttons -->
@@ -715,6 +714,14 @@
       setTimeout(() => { t.style.display = 'none'; }, 2000);
     }
 
+    // Sanitize any previous literal placeholder strings so they don't persist as user text
+    function sanitizeEditorHTML(rawHtml) {
+      if (!rawHtml) return '';
+      let clean = rawHtml.replace(/Start typing lyrics\.{3}/gi, '');
+      clean = clean.replace(/<div><br><\/div>/gi, '');
+      return clean.trim();
+    }
+
     function loadSong(songId, verId) {
       if (!state.songs.length) {
         createNewSong(false);
@@ -735,26 +742,13 @@
       document.getElementById('active-version-tag').innerText = ver.label;
       document.title = song.title + ' — Hook & Line';
 
-      // Load clean html or empty editor with placeholder
-      const content = ver.html || '';
-      editor.innerHTML = content.trim() === 'Start typing lyrics...' ? '' : content;
-      checkPlaceholder();
+      editor.innerHTML = sanitizeEditorHTML(ver.html);
       
       bindChordListeners();
       bindSectionTagListeners();
       renumberVerses();
       updateMeter();
       saveState();
-    }
-
-    function checkPlaceholder() {
-      const text = editor.innerText.trim();
-      const hasBadges = editor.querySelector('.chord-badge, .section-header-tag');
-      if (!text && !hasBadges) {
-        editor.classList.add('show-placeholder');
-      } else {
-        editor.classList.remove('show-placeholder');
-      }
     }
 
     function bindChordListeners() {
@@ -786,7 +780,6 @@
           }
           renumberVerses();
           updateMeter();
-          checkPlaceholder();
         };
       });
     }
@@ -839,13 +832,8 @@
     });
 
     editor.addEventListener('input', () => { 
-      checkPlaceholder();
       renumberVerses();
       updateMeter(); 
-    });
-
-    editor.addEventListener('focus', () => {
-      checkPlaceholder();
     });
 
     function openTagModal() {
@@ -902,7 +890,6 @@
       bindSectionTagListeners();
       renumberVerses();
       updateMeter();
-      checkPlaceholder();
       showToast(`Added ${tag.innerText}`);
     }
 
@@ -993,7 +980,6 @@
       }
 
       bindChordListeners();
-      checkPlaceholder();
       showToast(`Placed ${chord}`);
       updateMeter();
     }
@@ -1011,7 +997,6 @@
       selectedChordElem.remove();
       selectedChordElem = null;
       showToast('Deleted chord');
-      checkPlaceholder();
       updateMeter();
     }
 
@@ -1168,9 +1153,10 @@
       closeSaveDialog();
     }
 
-    function getNextUnnamedSongTitle() {
+    // Auto-calculate the next sequential "Untitled Song X" number
+    function getNextUntitledSongTitle() {
       let maxNum = 0;
-      const regex = /^Unnamed Song(?:\s+(\d+))?$/i;
+      const regex = /^Untitled Song(?:\s+(\d+))?$/i;
       state.songs.forEach(s => {
         const match = s.title.trim().match(regex);
         if (match) {
@@ -1178,20 +1164,19 @@
           if (num > maxNum) maxNum = num;
         }
       });
-      return `Unnamed Song ${maxNum + 1}`;
+      return `Untitled Song ${maxNum + 1}`;
     }
 
     function createNewSong(promptUser = true) {
       let name = '';
       if (promptUser) {
-        const input = prompt('Song title (leave blank for Unnamed Song):');
-        if (input === null) return; // User pressed Cancel
+        const input = prompt('Song title (leave blank for Untitled Song):');
+        if (input === null) return;
         name = input.trim();
       }
       
-      // Auto-name if empty
       if (!name) {
-        name = getNextUnnamedSongTitle();
+        name = getNextUntitledSongTitle();
       }
 
       const newSong = {
