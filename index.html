@@ -12,7 +12,7 @@
       --border: #2c2e3a;
       --border-light: #3a3d4d;
       --accent: #d9383a;
-      --chord-color: #a0a4b5; /* Lighter soft grey */
+      --chord-color: #a0a4b5;
       --text: #f0f1f5;
       --muted: #8b8ea0;
     }
@@ -64,6 +64,7 @@
       gap: 4px;
     }
     .btn-accent { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .btn-danger { background: #2a1618; border-color: #5c1f24; color: #ff8589; }
 
     /* Collapsible Chords Strip */
     .chord-strip-container {
@@ -114,17 +115,13 @@
       cursor: pointer;
     }
     .chord-pill:active { background: var(--accent); color: #fff; }
-    .chord-pill-delete {
-      background: #2a1618;
-      border-color: #5c1f24;
-      color: #ff8589;
-    }
+    .chord-pill-delete { background: #2a1618; border-color: #5c1f24; color: #ff8589; }
 
-    /* Main Workspace */
+    /* Workspace */
     .workspace { display: flex; flex: 1; flex-direction: column; overflow: hidden; position: relative; }
     @media(min-width: 900px) { .workspace { flex-direction: row; } }
 
-    /* Two-Layer Interactive Studio View */
+    /* Interactive Studio Editor */
     .editor-section {
       flex: 1;
       display: flex;
@@ -139,7 +136,7 @@
       color: var(--muted);
       font-size: 11px;
       font-family: monospace;
-      line-height: 48px; /* Matches line-pair height */
+      line-height: 48px;
       text-align: right;
       padding: 12px 6px 0 0;
       user-select: none;
@@ -160,7 +157,6 @@
       position: relative;
     }
 
-    /* Chords row above */
     .chord-lane {
       height: 16px;
       line-height: 16px;
@@ -169,13 +165,12 @@
       pointer-events: auto;
     }
 
-    /* Individual Chords */
     .chord-tag {
       position: absolute;
-      font-size: 11px; /* Smaller */
+      font-size: 11px;
       font-weight: 700;
       font-family: 'SF Mono', Menlo, monospace;
-      color: var(--chord-color); /* Light grey */
+      color: var(--chord-color);
       background: #1c1d24;
       padding: 0 4px;
       border-radius: 4px;
@@ -191,7 +186,6 @@
       box-shadow: 0 0 8px rgba(217, 56, 58, 0.7);
     }
 
-    /* Lyric input row */
     .lyric-input-line {
       background: transparent;
       border: none;
@@ -203,32 +197,27 @@
       width: 100%;
     }
 
-    /* Print Preview Container */
-    #all-songs-print-container { display: none; }
-    .song-print-block { page-break-after: always; padding: 24px 0; }
-    .song-print-block:last-child { page-break-after: auto; }
-    .song-print-title { font-size: 24px; font-weight: 800; margin-bottom: 16px; color: #000; border-bottom: 2px solid #ddd; padding-bottom: 6px; }
-
-    /* Selection Rhyme Tooltip */
+    /* Fixed Prominent Mobile Rhyme Trigger */
     #selection-rhyme-btn {
       position: absolute;
+      top: 10px;
+      right: 14px;
       display: none;
-      z-index: 50;
+      z-index: 100;
       background: var(--accent);
       color: #fff;
-      border: none;
+      border: 1px solid #ff7b80;
       border-radius: 18px;
-      padding: 6px 14px;
-      font-size: 12px;
+      padding: 8px 16px;
+      font-size: 13px;
       font-weight: 700;
-      box-shadow: 0 6px 20px rgba(0,0,0,0.6);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.8);
       cursor: pointer;
-      transform: translate(-50%, -100%);
     }
 
     /* Reference Drawer */
     .reference-suite {
-      height: 44%;
+      height: 48%;
       background: var(--surface);
       border-top: 1px solid var(--border);
       display: flex;
@@ -239,7 +228,7 @@
       .reference-suite { height: 100%; width: 420px; border-top: none; border-left: 1px solid var(--border); }
     }
 
-    .search-dock { padding: 8px 12px; border-bottom: 1px solid var(--border); display: flex; gap: 6px; }
+    .search-dock { padding: 8px 12px; border-bottom: 1px solid var(--border); display: flex; gap: 6px; align-items: center; }
     .search-dock input {
       flex: 1;
       padding: 8px 12px;
@@ -249,6 +238,7 @@
       color: #fff;
       font-size: 13px;
     }
+
     .category-pills { display: flex; gap: 6px; padding: 8px 12px; border-bottom: 1px solid var(--border); overflow-x: auto; white-space: nowrap; }
     .category-btn { background: transparent; border: 1px solid var(--border); border-radius: 14px; color: var(--muted); padding: 4px 10px; font-size: 11px; font-weight: 600; cursor: pointer; }
     .category-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
@@ -267,6 +257,7 @@
     .overlay.active { display: flex; }
     .dialog { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; width: 100%; max-width: 440px; max-height: 82vh; display: flex; flex-direction: column; overflow: hidden; }
     .dialog-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    
     .catalog-actions-bar {
       display: flex;
       justify-content: space-between;
@@ -275,6 +266,7 @@
       background: #14151a;
       border-bottom: 1px solid var(--border);
       font-size: 12px;
+      gap: 6px;
     }
     .dialog-body { flex: 1; overflow-y: auto; padding: 10px 12px; }
 
@@ -294,11 +286,27 @@
     .song-info { flex: 1; overflow: hidden; }
     .song-name { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+    .btn-delete-song {
+      background: transparent;
+      border: 1px solid #4a2125;
+      color: #ff6b70;
+      border-radius: 6px;
+      padding: 4px 8px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
     .popover-menu { position: fixed; background: #20222a; border: 1px solid var(--border-light); border-radius: 8px; z-index: 300; display: none; min-width: 180px; }
     .popover-item { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid var(--border); cursor: pointer; }
     .popover-item:last-child { border-bottom: none; }
 
     #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: rgba(30, 32, 40, 0.95); border: 1px solid var(--border-light); color: #fff; font-size: 12px; font-weight: 600; padding: 8px 16px; border-radius: 20px; z-index: 500; display: none; }
+
+    /* Print Output Container */
+    #all-songs-print-container { display: none; }
+    .song-print-block { page-break-after: always; padding: 24px 0; }
+    .song-print-block:last-child { page-break-after: auto; }
+    .song-print-title { font-size: 24px; font-weight: 800; margin-bottom: 16px; color: #000; border-bottom: 2px solid #ddd; padding-bottom: 6px; }
 
     @media print {
       body { background: #fff !important; color: #000 !important; }
@@ -329,7 +337,7 @@
   <!-- Collapsible Chords Strip -->
   <div class="chord-strip-container" id="chord-strip-container">
     <div class="chord-strip-header" onclick="toggleChordsCollapse()">
-      <span>Quick Chords (Tap chord to replace/insert, or Del to remove)</span>
+      <span>Quick Chords</span>
       <button class="chord-collapse-toggle" id="chord-collapse-btn">Hide ▲</button>
     </div>
     <div class="chord-strip-items" id="chord-strip-items">
@@ -352,13 +360,14 @@
       <!-- Interactive Studio Editor -->
       <div class="studio-lines-container" id="studio-lines"></div>
 
-      <!-- PDF Print Output -->
+      <!-- Quick Action Pin -->
+      <button id="selection-rhyme-btn">Find Rhymes</button>
+
       <div id="all-songs-print-container"></div>
-      <button id="selection-rhyme-btn">Rhymes</button>
     </div>
 
     <!-- MasterWriter Reference Drawer -->
-    <div class="reference-suite">
+    <div class="reference-suite" id="reference-suite">
       <div class="search-dock">
         <input type="text" id="query-field" placeholder="Search reference term...">
         <button class="btn btn-accent" onclick="triggerManualSearch()">Find</button>
@@ -373,7 +382,7 @@
       </div>
 
       <div class="dictionary-feed" id="dictionary-feed">
-        <span style="color:var(--muted); font-size:12px;">Select or double tap a word in your lyrics.</span>
+        <span style="color:var(--muted); font-size:12px;">Tap or double-tap any word to load rhymes.</span>
       </div>
     </div>
   </div>
@@ -390,8 +399,9 @@
       </div>
       
       <div class="catalog-actions-bar">
-        <div>
+        <div style="display:flex; gap:6px;">
           <button class="btn" style="padding:4px 8px; font-size:11px;" onclick="toggleSelectAll()">Select All</button>
+          <button class="btn btn-danger" id="delete-selected-btn" style="padding:4px 8px; font-size:11px; display:none;" onclick="deleteSelectedSongs()">Delete (0)</button>
         </div>
         <button class="btn btn-accent" id="export-selected-btn" style="padding:4px 10px; font-size:11px;" onclick="exportSelectedPDF()">
           Export Selected (0)
@@ -425,9 +435,8 @@
     let selectedSongIds = new Set();
     let activeFilterMode = 'rel_rhy';
 
-    // Song Data Model: array of structured line objects { lyrics: "", chords: [{ chord: "G", charCol: 0 }] }
     let currentDocumentLines = [];
-    let selectedChordRef = null; // { lineIdx, chordIdx }
+    let selectedChordRef = null;
     let activeInputCursor = { lineIdx: 0, charCol: 0 };
 
     const studioLines = document.getElementById('studio-lines');
@@ -441,7 +450,7 @@
     let selectedWord = '';
 
     function init() {
-      const stored = localStorage.getItem('mrwriter_v7');
+      const stored = localStorage.getItem('mrwriter_v10');
       if (stored) {
         state = JSON.parse(stored);
       } else {
@@ -485,7 +494,7 @@
     }
 
     function saveState() {
-      localStorage.setItem('mrwriter_v7', JSON.stringify(state));
+      localStorage.setItem('mrwriter_v10', JSON.stringify(state));
     }
 
     function showToast(text) {
@@ -496,9 +505,18 @@
     }
 
     function loadSong(songId, verId) {
-      const song = state.songs.find(s => s.id === songId);
-      if (!song) return;
+      if (!state.songs.length) {
+        createNewSong(false);
+        return;
+      }
+
+      let song = state.songs.find(s => s.id === songId);
+      if (!song) {
+        song = state.songs[0];
+        songId = song.id;
+      }
       state.activeSongId = songId;
+
       const ver = song.versions.find(v => v.id === verId) || song.versions[song.versions.length - 1];
       state.activeVersionId = ver.id;
 
@@ -514,7 +532,6 @@
       saveState();
     }
 
-    // Render the Two-Layer Interactive Workspace
     function renderStudio() {
       studioLines.innerHTML = '';
 
@@ -522,7 +539,6 @@
         const block = document.createElement('div');
         block.className = 'line-block';
 
-        // 1. Non-editable Chord Layer
         const chordLane = document.createElement('div');
         chordLane.className = 'chord-lane';
 
@@ -530,14 +546,12 @@
           const chordSpan = document.createElement('span');
           chordSpan.className = 'chord-tag';
           chordSpan.innerText = cItem.chord;
-          // Approximate character position horizontally
           chordSpan.style.left = `${Math.min(cItem.charCol * 8.8, window.innerWidth - 60)}px`;
 
           if (selectedChordRef && selectedChordRef.lineIdx === lineIdx && selectedChordRef.chordIdx === cIdx) {
             chordSpan.classList.add('selected');
           }
 
-          // Mark/Select chord on click
           chordSpan.onclick = (e) => {
             e.stopPropagation();
             if (selectedChordRef && selectedChordRef.lineIdx === lineIdx && selectedChordRef.chordIdx === cIdx) {
@@ -551,34 +565,29 @@
           chordLane.appendChild(chordSpan);
         });
 
-        // 2. Editable Lyrics Line
         const input = document.createElement('input');
         input.type = 'text';
         input.className = 'lyric-input-line';
         input.value = lineObj.lyrics;
 
-        input.onfocus = () => {
-          activeInputCursor.lineIdx = lineIdx;
-        };
+        input.onfocus = () => { activeInputCursor.lineIdx = lineIdx; };
 
-        input.onkeyup = (e) => {
+        const updateCursorAndDetectWord = () => {
           activeInputCursor.lineIdx = lineIdx;
           activeInputCursor.charCol = input.selectionStart;
-          inspectSelection(input);
+          detectWordAtCursor(input);
         };
 
-        input.onmouseup = () => {
-          activeInputCursor.lineIdx = lineIdx;
-          activeInputCursor.charCol = input.selectionStart;
-          inspectSelection(input);
-        };
+        input.onkeyup = updateCursorAndDetectWord;
+        input.onmouseup = updateCursorAndDetectWord;
+        input.onselect = updateCursorAndDetectWord;
+        input.ontouchend = () => setTimeout(updateCursorAndDetectWord, 100);
 
         input.oninput = () => {
           lineObj.lyrics = input.value;
           updateMeter();
         };
 
-        // Handle Enter (new line) and Backspace on empty line
         input.onkeydown = (e) => {
           if (e.key === 'Enter') {
             e.preventDefault();
@@ -608,9 +617,44 @@
       updateMeter();
     }
 
-    // Chord Button Click Handler: Swaps selected or Inserts above word
+    // Reliable word detection at cursor or selection
+    function detectWordAtCursor(input) {
+      let word = '';
+      const s = input.selectionStart;
+      const e = input.selectionEnd;
+
+      if (s !== e) {
+        word = input.value.substring(s, e).trim();
+      } else {
+        const text = input.value;
+        let start = s;
+        let end = s;
+        while (start > 0 && /\S/.test(text[start - 1])) start--;
+        while (end < text.length && /\S/.test(text[end])) end++;
+        word = text.substring(start, end).trim();
+      }
+
+      word = word.replace(/[^a-zA-Z]/g, '');
+
+      if (word && word.length > 1) {
+        selectedWord = word;
+        floatBtn.innerText = `Rhymes for "${selectedWord}"`;
+        floatBtn.style.display = 'block';
+        executeLookup(selectedWord);
+      } else {
+        floatBtn.style.display = 'none';
+      }
+    }
+
+    floatBtn.addEventListener('click', () => {
+      if (selectedWord) {
+        executeLookup(selectedWord);
+        document.getElementById('reference-suite').scrollIntoView({ behavior: 'smooth' });
+      }
+      floatBtn.style.display = 'none';
+    });
+
     function handleChordPress(chord) {
-      // 1. If a chord is marked/selected, swap it
       if (selectedChordRef) {
         currentDocumentLines[selectedChordRef.lineIdx].chords[selectedChordRef.chordIdx].chord = chord;
         showToast(`Swapped chord to ${chord}`);
@@ -619,18 +663,15 @@
         return;
       }
 
-      // 2. Otherwise insert above the current cursor position
       const targetLine = currentDocumentLines[activeInputCursor.lineIdx];
       if (!targetLine) return;
 
-      // Find beginning of word
       let col = activeInputCursor.charCol;
       while (col > 0 && /\S/.test(targetLine.lyrics[col - 1])) {
         col--;
       }
 
       targetLine.chords.push({ chord, charCol: col });
-      // Sort chords by column
       targetLine.chords.sort((a, b) => a.charCol - b.charCol);
 
       showToast(`Inserted ${chord} above word`);
@@ -642,7 +683,6 @@
       if (chord && chord.trim()) handleChordPress(chord.trim());
     }
 
-    // Delete Marked/Selected Chord
     function deleteSelectedChord() {
       if (!selectedChordRef) {
         showToast('Tap a chord first to delete it');
@@ -654,7 +694,6 @@
       renderStudio();
     }
 
-    // Keyboard backspace listener for marked chord
     window.addEventListener('keydown', (e) => {
       if (selectedChordRef && (e.key === 'Backspace' || e.key === 'Delete')) {
         e.preventDefault();
@@ -662,7 +701,6 @@
       }
     });
 
-    // Syllables Engine
     function countSyllables(word) {
       word = word.toLowerCase().replace(/[^a-z]/g, '');
       if (!word) return 0;
@@ -682,31 +720,6 @@
       }).join('<br>');
     }
 
-    // Text Selection for Rhymes
-    function inspectSelection(input) {
-      const s = input.selectionStart;
-      const e = input.selectionEnd;
-      if (s !== e) {
-        const txt = input.value.substring(s, e).trim();
-        if (txt && !/\s/.test(txt)) {
-          selectedWord = txt.replace(/[^a-zA-Z]/g, '');
-          if (selectedWord) {
-            floatBtn.style.top = '16px';
-            floatBtn.style.left = '50%';
-            floatBtn.style.display = 'block';
-            return;
-          }
-        }
-      }
-      floatBtn.style.display = 'none';
-    }
-
-    floatBtn.addEventListener('click', () => {
-      floatBtn.style.display = 'none';
-      if (selectedWord) executeLookup(selectedWord);
-    });
-
-    // Reference Drawer
     document.querySelectorAll('.category-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
@@ -721,17 +734,21 @@
       if (q) executeLookup(q);
     }
 
+    // Datamuse lookup with fallback
     async function executeLookup(term) {
+      if (!term) return;
       queryField.value = term;
-      dictFeed.innerHTML = '<span style="color:var(--muted); font-size:12px;">Searching database...</span>';
+      dictFeed.innerHTML = '<span style="color:var(--muted); font-size:12px;">Searching database for "' + term + '"...</span>';
 
       try {
-        const res = await fetch(`https://api.datamuse.com/words?${activeFilterMode}=${encodeURIComponent(term)}&max=80`);
+        const url = `https://api.datamuse.com/words?${activeFilterMode}=${encodeURIComponent(term)}&max=100`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('Network error');
         const words = await res.json();
         dictFeed.innerHTML = '';
 
-        if (!words.length) {
-          dictFeed.innerHTML = `<span style="color:var(--muted); font-size:12px;">No matches found for "${term}".</span>`;
+        if (!words || !words.length) {
+          dictFeed.innerHTML = `<span style="color:var(--muted); font-size:12px;">No results found for "${term}". Try "Near Rhymes" tab.</span>`;
           return;
         }
 
@@ -765,11 +782,11 @@
           dictFeed.appendChild(section);
         }
       } catch (e) {
-        dictFeed.innerHTML = '<span style="color:var(--accent); font-size:12px;">Offline or network error.</span>';
+        dictFeed.innerHTML = '<span style="color:var(--accent); font-size:12px;">Offline or network connection error. Check data/WiFi.</span>';
       }
     }
 
-    // Save & Versioning
+    // Save & Catalog Management
     function openSaveDialog() { document.getElementById('save-overlay').classList.add('active'); }
     function closeSaveDialog() { document.getElementById('save-overlay').classList.remove('active'); }
 
@@ -801,12 +818,16 @@
       closeSaveDialog();
     }
 
-    function createNewSong() {
-      const name = prompt('Song title:');
-      if (!name || !name.trim()) return;
+    function createNewSong(promptUser = true) {
+      let name = 'Untitled Song';
+      if (promptUser) {
+        const input = prompt('Song title:');
+        if (!input || !input.trim()) return;
+        name = input.trim();
+      }
       const newSong = {
         id: 's_' + Date.now(),
-        title: name.trim(),
+        title: name,
         versions: [{ id: 'v_' + Date.now(), label: 'v1', document: [{ lyrics: '', chords: [] }], updatedAt: Date.now() }]
       };
       state.songs.unshift(newSong);
@@ -815,7 +836,48 @@
       showToast(`Created "${newSong.title}"`);
     }
 
-    // Print & PDF Format Generator
+    function deleteSong(songId, songTitle, e) {
+      if (e) e.stopPropagation();
+      if (!confirm(`Delete "${songTitle}"? This cannot be undone.`)) return;
+
+      const idx = state.songs.findIndex(s => s.id === songId);
+      if (idx !== -1) {
+        state.songs.splice(idx, 1);
+        selectedSongIds.delete(songId);
+        showToast(`Deleted "${songTitle}"`);
+        saveState();
+
+        if (songId === state.activeSongId) {
+          if (state.songs.length > 0) {
+            loadSong(state.songs[0].id, state.songs[0].versions[0].id);
+          } else {
+            createNewSong(false);
+          }
+        }
+        renderCatalogList();
+      }
+    }
+
+    function deleteSelectedSongs() {
+      if (selectedSongIds.size === 0) return;
+      if (!confirm(`Delete all ${selectedSongIds.size} selected songs?`)) return;
+
+      state.songs = state.songs.filter(s => !selectedSongIds.has(s.id));
+      showToast(`Deleted ${selectedSongIds.size} songs`);
+      selectedSongIds.clear();
+      saveState();
+
+      if (!state.songs.some(s => s.id === state.activeSongId)) {
+        if (state.songs.length > 0) {
+          loadSong(state.songs[0].id, state.songs[0].versions[0].id);
+        } else {
+          createNewSong(false);
+        }
+      }
+
+      renderCatalogList();
+    }
+
     function generatePrintHTML(documentLines) {
       return documentLines.map(line => {
         let chordLine = '';
@@ -885,10 +947,18 @@
       setTimeout(() => { document.title = originalTitle; }, 1000);
     }
 
-    // Catalog & Multi-Select
     function updateSelectedCounter() {
-      const btn = document.getElementById('export-selected-btn');
-      btn.innerText = `Export Selected (${selectedSongIds.size})`;
+      const exportBtn = document.getElementById('export-selected-btn');
+      const deleteBtn = document.getElementById('delete-selected-btn');
+
+      exportBtn.innerText = `Export Selected (${selectedSongIds.size})`;
+      deleteBtn.innerText = `Delete (${selectedSongIds.size})`;
+
+      if (selectedSongIds.size > 0) {
+        deleteBtn.style.display = 'inline-flex';
+      } else {
+        deleteBtn.style.display = 'none';
+      }
     }
 
     function toggleSelectAll() {
@@ -905,6 +975,12 @@
       const list = document.getElementById('catalog-list');
       list.innerHTML = '';
 
+      if (state.songs.length === 0) {
+        list.innerHTML = '<div style="color:var(--muted); text-align:center; padding:20px;">No songs yet. Tap "+ New" above.</div>';
+        updateSelectedCounter();
+        return;
+      }
+
       state.songs.forEach(song => {
         const item = document.createElement('div');
         item.className = `song-row ${song.id === state.activeSongId ? 'active' : ''}`;
@@ -916,7 +992,7 @@
             <div class="song-name">${song.title}</div>
             <div style="font-size:11px; color:var(--muted);">${song.versions.length} versions (Hold for dropdown)</div>
           </div>
-          <span style="font-size:12px; color:var(--muted);">${song.versions[song.versions.length - 1].label}</span>
+          <button class="btn-delete-song" title="Delete Song">🗑️</button>
         `;
 
         const checkbox = item.querySelector('.song-checkbox');
@@ -926,6 +1002,9 @@
           else selectedSongIds.delete(song.id);
           updateSelectedCounter();
         };
+
+        const deleteBtn = item.querySelector('.btn-delete-song');
+        deleteBtn.onclick = (e) => deleteSong(song.id, song.title, e);
 
         let timer;
         const startPress = e => timer = setTimeout(() => showVersionPopover(song, e), 500);
@@ -938,7 +1017,7 @@
         item.addEventListener('mouseup', cancelPress);
 
         item.onclick = (e) => {
-          if (e.target !== checkbox) {
+          if (e.target !== checkbox && e.target !== deleteBtn) {
             loadSong(song.id, song.versions[song.versions.length - 1].id);
             closeSongCatalog();
           }
