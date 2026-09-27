@@ -121,7 +121,7 @@
     .workspace { display: flex; flex: 1; flex-direction: column; overflow: hidden; position: relative; }
     @media(min-width: 900px) { .workspace { flex-direction: row; } }
 
-    /* Interactive Studio Editor */
+    /* Studio Editor */
     .editor-section {
       flex: 1;
       display: flex;
@@ -130,77 +130,67 @@
       background: var(--bg);
     }
     .meter-rail {
-      width: 32px;
+      width: 34px;
       background: rgba(0,0,0,0.25);
       border-right: 1px solid var(--border);
       color: var(--muted);
       font-size: 11px;
       font-family: monospace;
-      line-height: 48px;
+      line-height: 38px;
       text-align: right;
-      padding: 12px 6px 0 0;
+      padding: 14px 6px 0 0;
       user-select: none;
     }
 
-    .studio-lines-container {
+    #editor-content {
       flex: 1;
       overflow-y: auto;
-      padding: 12px 14px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+      padding: 14px 16px;
+      outline: none;
+      font-size: 16px;
+      line-height: 38px; /* Room for chords above text */
+      color: var(--text);
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
-    .line-block {
-      display: flex;
-      flex-direction: column;
+    /* Inline Placed Chords */
+    .chord-badge {
+      display: inline-block;
       position: relative;
-    }
-
-    /* Monospaced Chord Lane */
-    .chord-lane {
-      height: 18px;
-      position: relative;
+      vertical-align: baseline;
+      width: 0;
+      overflow: visible;
       user-select: none;
-      pointer-events: auto;
-      font-family: 'SF Mono', Menlo, Consolas, monospace;
     }
 
-    .chord-tag {
+    .chord-badge-inner {
       position: absolute;
+      bottom: 14px;
+      left: 0;
       font-size: 11px;
       font-weight: 700;
       font-family: 'SF Mono', Menlo, Consolas, monospace;
       color: var(--chord-color);
-      background: #1c1d24;
-      padding: 0 4px;
+      background: #1e2029;
+      border: 1px solid #363949;
       border-radius: 4px;
-      border: 1px solid #333644;
-      cursor: pointer;
-      transform: translateY(-2px);
-      z-index: 5;
+      padding: 0 4px;
+      line-height: 16px;
+      height: 16px;
       white-space: nowrap;
+      cursor: pointer;
+      transform: translateX(-50%);
     }
-    .chord-tag.selected {
+
+    .chord-badge.selected .chord-badge-inner {
       background: var(--accent);
-      border-color: #ff6b70;
+      border-color: #ff7b80;
       color: #fff;
       box-shadow: 0 0 8px rgba(217, 56, 58, 0.7);
     }
 
-    .lyric-input-line {
-      background: transparent;
-      border: none;
-      outline: none;
-      color: var(--text);
-      font-size: 15px;
-      font-family: 'SF Mono', Menlo, Consolas, monospace;
-      line-height: 24px;
-      width: 100%;
-      letter-spacing: 0px;
-    }
-
-    /* Rhyme Action Pin */
+    /* Rhyme Floating Action Pin */
     #selection-rhyme-btn {
       position: absolute;
       top: 10px;
@@ -220,7 +210,7 @@
 
     /* Reference Drawer */
     .reference-suite {
-      height: 48%;
+      height: 46%;
       background: var(--surface);
       border-top: 1px solid var(--border);
       display: flex;
@@ -256,7 +246,6 @@
     .word-card:active { background: var(--accent); color: #fff; }
     .word-card span { font-size: 10px; color: var(--muted); font-family: monospace; }
 
-    /* Custom Phrase Card */
     .phrase-card {
       background: #17181f;
       border: 1px solid var(--border);
@@ -324,10 +313,10 @@
     @media print {
       body { background: #fff !important; color: #000 !important; }
       header, .chord-strip-container, .meter-rail, .reference-suite, #selection-rhyme-btn, .overlay, .popover-menu, #toast { display: none !important; }
-      .studio-lines-container { display: none !important; }
+      #editor-content { display: none !important; }
       #all-songs-print-container { display: block !important; padding: 0 !important; }
       .chord-print-label { color: #555 !important; font-size: 11px !important; font-weight: 700 !important; font-family: monospace !important; }
-      .lyric-print-text { color: #000 !important; font-size: 15px !important; font-family: monospace !important; }
+      .lyric-print-text { color: #000 !important; font-size: 15px !important; }
     }
   </style>
 </head>
@@ -350,17 +339,17 @@
   <!-- Collapsible Chords Strip -->
   <div class="chord-strip-container" id="chord-strip-container">
     <div class="chord-strip-header" onclick="toggleChordsCollapse()">
-      <span>Quick Chords (Place cursor anywhere or select chord to replace)</span>
+      <span>Quick Chords (Place cursor anywhere in lyrics, tap a chord)</span>
       <button class="chord-collapse-toggle" id="chord-collapse-btn">Hide ▲</button>
     </div>
     <div class="chord-strip-items" id="chord-strip-items">
-      <button class="chord-pill" onclick="handleChordPress('G')">G</button>
-      <button class="chord-pill" onclick="handleChordPress('F')">F</button>
-      <button class="chord-pill" onclick="handleChordPress('C')">C</button>
-      <button class="chord-pill" onclick="handleChordPress('D')">D</button>
-      <button class="chord-pill" onclick="handleChordPress('Am')">Am</button>
-      <button class="chord-pill" onclick="handleChordPress('Em')">Em</button>
-      <button class="chord-pill" onclick="handleChordPress('Bb')">Bb</button>
+      <button class="chord-pill" onclick="insertChordAtCursor('G')">G</button>
+      <button class="chord-pill" onclick="insertChordAtCursor('F')">F</button>
+      <button class="chord-pill" onclick="insertChordAtCursor('C')">C</button>
+      <button class="chord-pill" onclick="insertChordAtCursor('D')">D</button>
+      <button class="chord-pill" onclick="insertChordAtCursor('Am')">Am</button>
+      <button class="chord-pill" onclick="insertChordAtCursor('Em')">Em</button>
+      <button class="chord-pill" onclick="insertChordAtCursor('Bb')">Bb</button>
       <button class="chord-pill" onclick="promptCustomChord()">+ Custom</button>
       <button class="chord-pill chord-pill-delete" onclick="deleteSelectedChord()">Del ⌫</button>
     </div>
@@ -370,8 +359,8 @@
     <div class="editor-section">
       <div class="meter-rail" id="meter-rail"></div>
       
-      <!-- Interactive Studio Editor -->
-      <div class="studio-lines-container" id="studio-lines"></div>
+      <!-- ContentEditable Visual Studio Editor -->
+      <div id="editor-content" contenteditable="true" spellcheck="false"></div>
 
       <!-- Quick Action Pin -->
       <button id="selection-rhyme-btn">Find Rhymes</button>
@@ -447,12 +436,10 @@
     let state = { activeSongId: null, activeVersionId: null, songs: [] };
     let selectedSongIds = new Set();
     let activeFilterMode = 'rel_rhy';
+    let selectedChordElem = null;
+    let savedSelectionRange = null;
 
-    let currentDocumentLines = [];
-    let selectedChordRef = null;
-    let activeInputCursor = { lineIdx: 0, charCol: 0 };
-
-    const studioLines = document.getElementById('studio-lines');
+    const editor = document.getElementById('editor-content');
     const meterRail = document.getElementById('meter-rail');
     const floatBtn = document.getElementById('selection-rhyme-btn');
     const queryField = document.getElementById('query-field');
@@ -463,26 +450,17 @@
     let selectedWord = '';
 
     function init() {
-      const stored = localStorage.getItem('mrwriter_v12');
+      const stored = localStorage.getItem('mrwriter_v14');
       if (stored) {
         state = JSON.parse(stored);
       } else {
         const seedSong = {
           id: 's_' + Date.now(),
-          title: 'Smoke on the Water',
+          title: 'Montreux Session',
           versions: [{
             id: 'v_1',
             label: 'v1',
-            document: [
-              { lyrics: 'We all came out to Montreux', chords: [{ chord: 'G', charCol: 0 }, { chord: 'F', charCol: 11 }, { chord: 'G', charCol: 20 }] },
-              { lyrics: 'On the Lake Geneva shoreline', chords: [{ chord: 'F', charCol: 7 }, { chord: 'G', charCol: 19 }] },
-              { lyrics: 'To make records with a mobile', chords: [{ chord: 'F', charCol: 8 }, { chord: 'G', charCol: 23 }] },
-              { lyrics: 'We didn\'t have much time', chords: [{ chord: 'F', charCol: 10 }, { chord: 'G', charCol: 18 }] },
-              { lyrics: 'Frank Zappa and the Mothers', chords: [{ chord: 'G', charCol: 0 }, { chord: 'F', charCol: 12 }, { chord: 'G', charCol: 20 }] },
-              { lyrics: 'Were at the best place around', chords: [{ chord: 'F', charCol: 12 }, { chord: 'G', charCol: 23 }] },
-              { lyrics: 'But some stupid with a flare gun', chords: [{ chord: 'F', charCol: 9 }, { chord: 'G', charCol: 23 }] },
-              { lyrics: 'Burned the place to the ground', chords: [{ chord: 'F', charCol: 11 }, { chord: 'G', charCol: 23 }] }
-            ],
+            html: '<span class="chord-badge" contenteditable="false" data-chord="G"><span class="chord-badge-inner">G</span></span>We all came out to <span class="chord-badge" contenteditable="false" data-chord="F"><span class="chord-badge-inner">F</span></span>Montreux<br>On the <span class="chord-badge" contenteditable="false" data-chord="G"><span class="chord-badge-inner">G</span></span>shoreline drafting songs',
             updatedAt: Date.now()
           }]
         };
@@ -507,7 +485,7 @@
     }
 
     function saveState() {
-      localStorage.setItem('mrwriter_v12', JSON.stringify(state));
+      localStorage.setItem('mrwriter_v14', JSON.stringify(state));
     }
 
     function showToast(text) {
@@ -537,190 +515,114 @@
       document.getElementById('active-version-tag').innerText = ver.label;
       document.title = song.title;
 
-      currentDocumentLines = JSON.parse(JSON.stringify(ver.document || []));
-      if (!currentDocumentLines.length) currentDocumentLines = [{ lyrics: '', chords: [] }];
-      
-      selectedChordRef = null;
-      renderStudio();
+      editor.innerHTML = ver.html || 'Start typing your lyrics...';
+      bindChordListeners();
+      updateMeter();
       saveState();
     }
 
-    function renderStudio() {
-      studioLines.innerHTML = '';
-
-      currentDocumentLines.forEach((lineObj, lineIdx) => {
-        const block = document.createElement('div');
-        block.className = 'line-block';
-
-        const chordLane = document.createElement('div');
-        chordLane.className = 'chord-lane';
-
-        lineObj.chords.forEach((cItem, cIdx) => {
-          const chordSpan = document.createElement('span');
-          chordSpan.className = 'chord-tag';
-          chordSpan.innerText = cItem.chord;
-          chordSpan.style.left = `calc(${cItem.charCol}ch)`;
-
-          if (selectedChordRef && selectedChordRef.lineIdx === lineIdx && selectedChordRef.chordIdx === cIdx) {
-            chordSpan.classList.add('selected');
-          }
-
-          chordSpan.onclick = (e) => {
-            e.stopPropagation();
-            if (selectedChordRef && selectedChordRef.lineIdx === lineIdx && selectedChordRef.chordIdx === cIdx) {
-              selectedChordRef = null;
-            } else {
-              selectedChordRef = { lineIdx, chordIdx: cIdx };
-            }
-            renderStudio();
-          };
-
-          chordLane.appendChild(chordSpan);
-        });
-
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.className = 'lyric-input-line';
-        input.value = lineObj.lyrics;
-
-        input.onfocus = () => { 
-          activeInputCursor.lineIdx = lineIdx;
-          activeInputCursor.charCol = input.selectionStart || 0;
-        };
-
-        const updateCursorAndDetectWord = () => {
-          activeInputCursor.lineIdx = lineIdx;
-          activeInputCursor.charCol = input.selectionStart || 0;
-          detectWordAtCursor(input);
-        };
-
-        input.onkeyup = updateCursorAndDetectWord;
-        input.onmouseup = updateCursorAndDetectWord;
-        input.onselect = updateCursorAndDetectWord;
-        input.ontouchend = () => setTimeout(updateCursorAndDetectWord, 100);
-
-        input.oninput = () => {
-          lineObj.lyrics = input.value;
-          updateMeter();
-        };
-
-        input.onkeydown = (e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault();
-            currentDocumentLines.splice(lineIdx + 1, 0, { lyrics: '', chords: [] });
-            renderStudio();
-            setTimeout(() => {
-              const allInputs = studioLines.querySelectorAll('.lyric-input-line');
-              if (allInputs[lineIdx + 1]) allInputs[lineIdx + 1].focus();
-            }, 50);
-          } else if (e.key === 'Backspace' && input.value === '' && currentDocumentLines.length > 1) {
-            e.preventDefault();
-            currentDocumentLines.splice(lineIdx, 1);
-            renderStudio();
-            setTimeout(() => {
-              const allInputs = studioLines.querySelectorAll('.lyric-input-line');
-              const target = allInputs[Math.max(0, lineIdx - 1)];
-              if (target) target.focus();
-            }, 50);
+    // Attach click handlers to any chord badges
+    function bindChordListeners() {
+      editor.querySelectorAll('.chord-badge').forEach(badge => {
+        badge.onclick = (e) => {
+          e.stopPropagation();
+          if (selectedChordElem === badge) {
+            badge.classList.remove('selected');
+            selectedChordElem = null;
+          } else {
+            if (selectedChordElem) selectedChordElem.classList.remove('selected');
+            badge.classList.add('selected');
+            selectedChordElem = badge;
           }
         };
-
-        block.appendChild(chordLane);
-        block.appendChild(input);
-        studioLines.appendChild(block);
       });
+    }
 
+    // Keep track of user's typing position
+    function saveCurrentRange() {
+      const sel = window.getSelection();
+      if (sel && sel.rangeCount > 0) {
+        savedSelectionRange = sel.getRangeAt(0);
+      }
+    }
+
+    editor.addEventListener('keyup', () => { saveCurrentRange(); detectWord(); updateMeter(); });
+    editor.addEventListener('mouseup', () => { saveCurrentRange(); detectWord(); });
+    editor.addEventListener('touchend', () => { setTimeout(() => { saveCurrentRange(); detectWord(); }, 80); });
+    editor.addEventListener('input', () => { updateMeter(); });
+
+    // Insert Chord At Exact Cursor or Swap Selected
+    function insertChordAtCursor(chord) {
+      // 1. If an existing chord was tapped/marked, swap it
+      if (selectedChordElem) {
+        selectedChordElem.dataset.chord = chord;
+        selectedChordElem.querySelector('.chord-badge-inner').innerText = chord;
+        selectedChordElem.classList.remove('selected');
+        selectedChordElem = null;
+        showToast(`Swapped chord to ${chord}`);
+        updateMeter();
+        return;
+      }
+
+      // 2. Otherwise insert inline right at cursor location
+      editor.focus();
+      let range = savedSelectionRange;
+
+      if (!range) {
+        const sel = window.getSelection();
+        if (sel.rangeCount > 0) range = sel.getRangeAt(0);
+      }
+
+      const badge = document.createElement('span');
+      badge.className = 'chord-badge';
+      badge.contentEditable = 'false';
+      badge.dataset.chord = chord;
+      badge.innerHTML = `<span class="chord-badge-inner">${chord}</span>`;
+
+      if (range && editor.contains(range.commonAncestorContainer)) {
+        range.deleteContents();
+        range.insertNode(badge);
+
+        // Move caret immediately after chord
+        range.setStartAfter(badge);
+        range.setEndAfter(badge);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        savedSelectionRange = range;
+      } else {
+        editor.appendChild(badge);
+      }
+
+      bindChordListeners();
+      showToast(`Placed ${chord}`);
       updateMeter();
     }
 
-    function handleChordPress(chord) {
-      if (selectedChordRef) {
-        currentDocumentLines[selectedChordRef.lineIdx].chords[selectedChordRef.chordIdx].chord = chord;
-        showToast(`Swapped chord to ${chord}`);
-        selectedChordRef = null;
-        renderStudio();
-        return;
-      }
-
-      const targetLine = currentDocumentLines[activeInputCursor.lineIdx];
-      if (!targetLine) return;
-
-      const exactCol = activeInputCursor.charCol;
-
-      targetLine.chords.push({ chord, charCol: exactCol });
-      targetLine.chords.sort((a, b) => a.charCol - b.charCol);
-
-      showToast(`Placed ${chord} at cursor`);
-      renderStudio();
-      
-      setTimeout(() => {
-        const inputs = studioLines.querySelectorAll('.lyric-input-line');
-        if (inputs[activeInputCursor.lineIdx]) {
-          inputs[activeInputCursor.lineIdx].focus();
-          inputs[activeInputCursor.lineIdx].setSelectionRange(exactCol, exactCol);
-        }
-      }, 50);
-    }
-
     function promptCustomChord() {
-      const chord = prompt('Enter custom chord:');
-      if (chord && chord.trim()) handleChordPress(chord.trim());
+      const chord = prompt('Enter custom chord (e.g. C#m7, F#sus4):');
+      if (chord && chord.trim()) insertChordAtCursor(chord.trim());
     }
 
     function deleteSelectedChord() {
-      if (!selectedChordRef) {
-        showToast('Tap a chord first to delete it');
+      if (!selectedChordElem) {
+        showToast('Tap a chord badge first to delete it');
         return;
       }
-      currentDocumentLines[selectedChordRef.lineIdx].chords.splice(selectedChordRef.chordIdx, 1);
-      selectedChordRef = null;
+      selectedChordElem.remove();
+      selectedChordElem = null;
       showToast('Deleted chord');
-      renderStudio();
+      updateMeter();
     }
 
     window.addEventListener('keydown', (e) => {
-      if (selectedChordRef && (e.key === 'Backspace' || e.key === 'Delete')) {
+      if (selectedChordElem && (e.key === 'Backspace' || e.key === 'Delete')) {
         e.preventDefault();
         deleteSelectedChord();
       }
     });
 
-    function detectWordAtCursor(input) {
-      let word = '';
-      const s = input.selectionStart;
-      const e = input.selectionEnd;
-
-      if (s !== e) {
-        word = input.value.substring(s, e).trim();
-      } else {
-        const text = input.value;
-        let start = s;
-        let end = s;
-        while (start > 0 && /\S/.test(text[start - 1])) start--;
-        while (end < text.length && /\S/.test(text[end])) end++;
-        word = text.substring(start, end).trim();
-      }
-
-      word = word.replace(/[^a-zA-Z]/g, '');
-
-      if (word && word.length > 1) {
-        selectedWord = word;
-        floatBtn.innerText = `Rhymes for "${selectedWord}"`;
-        floatBtn.style.display = 'block';
-        executeLookup(selectedWord);
-      } else {
-        floatBtn.style.display = 'none';
-      }
-    }
-
-    floatBtn.addEventListener('click', () => {
-      if (selectedWord) {
-        executeLookup(selectedWord);
-        document.getElementById('reference-suite').scrollIntoView({ behavior: 'smooth' });
-      }
-      floatBtn.style.display = 'none';
-    });
-
+    // Syllables: strips out all chord badges so only lyrics are measured
     function countSyllables(word) {
       word = word.toLowerCase().replace(/[^a-z]/g, '');
       if (!word) return 0;
@@ -732,14 +634,47 @@
     }
 
     function updateMeter() {
-      meterRail.innerHTML = currentDocumentLines.map(line => {
-        const clean = line.lyrics.trim();
+      // Clone editor and strip chord badges to get accurate text
+      const clone = editor.cloneNode(true);
+      clone.querySelectorAll('.chord-badge').forEach(b => b.remove());
+      const rawText = clone.innerText || '';
+
+      const lines = rawText.split('\n');
+      meterRail.innerHTML = lines.map(line => {
+        const clean = line.trim();
         if (!clean) return '&nbsp;';
         const words = clean.split(/\s+/);
         return words.reduce((sum, w) => sum + countSyllables(w), 0);
       }).join('<br>');
     }
 
+    // Word detection for rhymes
+    function detectWord() {
+      const sel = window.getSelection();
+      if (!sel || !sel.rangeCount) return;
+      const text = sel.toString().trim();
+
+      if (text && !/\s/.test(text)) {
+        selectedWord = text.replace(/[^a-zA-Z]/g, '');
+        if (selectedWord.length > 1) {
+          floatBtn.innerText = `Rhymes for "${selectedWord}"`;
+          floatBtn.style.display = 'block';
+          executeLookup(selectedWord);
+          return;
+        }
+      }
+      floatBtn.style.display = 'none';
+    }
+
+    floatBtn.addEventListener('click', () => {
+      if (selectedWord) {
+        executeLookup(selectedWord);
+        document.getElementById('reference-suite').scrollIntoView({ behavior: 'smooth' });
+      }
+      floatBtn.style.display = 'none';
+    });
+
+    // Datamuse & Phrases Engine
     document.querySelectorAll('.category-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
@@ -754,7 +689,6 @@
       if (q) executeLookup(q);
     }
 
-    // MasterWriter Engine: Dedicated Multi-Word Phrases & Clichés Parser
     async function executeLookup(term) {
       if (!term) return;
       queryField.value = term;
@@ -762,7 +696,6 @@
 
       try {
         if (activeFilterMode === 'phrases') {
-          // Fetch multi-word idioms, expressions, and word associations
           const [res1, res2] = await Promise.all([
             fetch(`https://api.datamuse.com/words?sp=*+${encodeURIComponent(term)}+*&max=60`),
             fetch(`https://api.datamuse.com/words?rel_trg=${encodeURIComponent(term)}&max=60`)
@@ -771,21 +704,13 @@
           const data1 = await res1.json();
           const data2 = await res2.json();
 
-          // Filter for actual phrases (containing space) + contextual collocations
           const phraseMap = new Map();
-          
           data1.forEach(item => {
-            if (item.word.includes(' ') && !phraseMap.has(item.word)) {
-              phraseMap.set(item.word, item);
-            }
+            if (item.word.includes(' ') && !phraseMap.has(item.word)) phraseMap.set(item.word, item);
           });
-
-          // Generate pairings like "common ground", "solid ground"
           data2.forEach(item => {
-            const combinedPhrase = `${item.word} ${term}`;
-            if (!phraseMap.has(combinedPhrase)) {
-              phraseMap.set(combinedPhrase, { word: combinedPhrase, score: item.score });
-            }
+            const combined = `${item.word} ${term}`;
+            if (!phraseMap.has(combined)) phraseMap.set(combined, { word: combined });
           });
 
           dictFeed.innerHTML = '';
@@ -805,7 +730,7 @@
             card.innerHTML = `<span>${item.word}</span> <span style="font-size:10px;">Tap to copy</span>`;
             card.onclick = () => {
               navigator.clipboard.writeText(item.word);
-              showToast(`Copied "${item.word}" to clipboard`);
+              showToast(`Copied "${item.word}"`);
             };
             section.appendChild(card);
           });
@@ -814,15 +739,12 @@
           return;
         }
 
-        // Standard Single-Word Engines (Rhymes, Near Rhymes, Synonyms, Families)
-        const url = `https://api.datamuse.com/words?${activeFilterMode}=${encodeURIComponent(term)}&max=100`;
-        const res = await fetch(url);
-        if (!res.ok) throw new Error('Network error');
+        const res = await fetch(`https://api.datamuse.com/words?${activeFilterMode}=${encodeURIComponent(term)}&max=100`);
         const words = await res.json();
         dictFeed.innerHTML = '';
 
         if (!words || !words.length) {
-          dictFeed.innerHTML = `<span style="color:var(--muted); font-size:12px;">No results found for "${term}". Try another tab above.</span>`;
+          dictFeed.innerHTML = `<span style="color:var(--muted); font-size:12px;">No matches found for "${term}".</span>`;
           return;
         }
 
@@ -847,7 +769,7 @@
             card.innerHTML = `${item.word} <span>${item.numSyllables || ''}</span>`;
             card.onclick = () => {
               navigator.clipboard.writeText(item.word);
-              showToast(`Copied "${item.word}" to clipboard`);
+              showToast(`Copied "${item.word}"`);
             };
             cluster.appendChild(card);
           });
@@ -856,7 +778,7 @@
           dictFeed.appendChild(section);
         }
       } catch (e) {
-        dictFeed.innerHTML = '<span style="color:var(--accent); font-size:12px;">Network error. Check internet connection.</span>';
+        dictFeed.innerHTML = '<span style="color:var(--accent); font-size:12px;">Network error. Check connection.</span>';
       }
     }
 
@@ -871,7 +793,7 @@
       if (type === 'overwrite') {
         const ver = song.versions.find(v => v.id === state.activeVersionId);
         if (ver) {
-          ver.document = JSON.parse(JSON.stringify(currentDocumentLines));
+          ver.html = editor.innerHTML;
           ver.updatedAt = Date.now();
           showToast(`Saved (${ver.label})`);
         }
@@ -880,7 +802,7 @@
         const newV = {
           id: 'v_' + Date.now(),
           label: 'v' + vNum,
-          document: JSON.parse(JSON.stringify(currentDocumentLines)),
+          html: editor.innerHTML,
           updatedAt: Date.now()
         };
         song.versions.push(newV);
@@ -902,7 +824,7 @@
       const newSong = {
         id: 's_' + Date.now(),
         title: name,
-        versions: [{ id: 'v_' + Date.now(), label: 'v1', document: [{ lyrics: '', chords: [] }], updatedAt: Date.now() }]
+        versions: [{ id: 'v_' + Date.now(), label: 'v1', html: 'Start typing lyrics...', updatedAt: Date.now() }]
       };
       state.songs.unshift(newSong);
       loadSong(newSong.id, newSong.versions[0].id);
@@ -952,25 +874,7 @@
       renderCatalogList();
     }
 
-    // Monospaced Printable Generator
-    function generatePrintHTML(documentLines) {
-      return documentLines.map(line => {
-        let chordLine = '';
-        let lastPos = 0;
-        line.chords.forEach(c => {
-          chordLine += ' '.repeat(Math.max(0, c.charCol - lastPos)) + c.chord;
-          lastPos = c.charCol + c.chord.length;
-        });
-
-        return `
-          <div style="margin-bottom:12px; font-family:monospace; line-height:1.4;">
-            <div class="chord-print-label">${chordLine ? chordLine.replace(/\s/g, '&nbsp;') : '&nbsp;'}</div>
-            <div class="lyric-print-text">${line.lyrics ? line.lyrics.replace(/\s/g, '&nbsp;') : '&nbsp;'}</div>
-          </div>
-        `;
-      }).join('');
-    }
-
+    // PDF Print Export
     function exportSinglePDF() {
       const song = state.songs.find(s => s.id === state.activeSongId);
       const originalTitle = document.title;
@@ -981,7 +885,7 @@
       printContainer.innerHTML = `
         <div class="song-print-block">
           <div class="song-print-title">${song.title}</div>
-          ${generatePrintHTML(currentDocumentLines)}
+          <div style="font-size:16px; line-height:36px;">${editor.innerHTML}</div>
         </div>
       `;
 
@@ -997,13 +901,9 @@
 
       closeSongCatalog();
       const originalTitle = document.title;
-      
-      if (selectedSongIds.size === 1) {
-        const singleSong = state.songs.find(s => selectedSongIds.has(s.id));
-        document.title = singleSong ? singleSong.title : 'Mr_Writer_Song';
-      } else {
-        document.title = 'Mr_Writer_Selection';
-      }
+      document.title = selectedSongIds.size === 1 
+        ? (state.songs.find(s => selectedSongIds.has(s.id))?.title || 'Song')
+        : 'Mr_Writer_Selection';
 
       const targetSongs = state.songs.filter(s => selectedSongIds.has(s.id));
       const printContainer = document.getElementById('all-songs-print-container');
@@ -1013,7 +913,7 @@
         return `
           <div class="song-print-block">
             <div class="song-print-title">${song.title} <span style="font-size:12px; font-weight:normal; color:#666;">(${latestVer.label})</span></div>
-            ${generatePrintHTML(latestVer.document || [])}
+            <div style="font-size:16px; line-height:36px;">${latestVer.html}</div>
           </div>
         `;
       }).join('');
@@ -1029,11 +929,7 @@
       exportBtn.innerText = `Export Selected (${selectedSongIds.size})`;
       deleteBtn.innerText = `Delete (${selectedSongIds.size})`;
 
-      if (selectedSongIds.size > 0) {
-        deleteBtn.style.display = 'inline-flex';
-      } else {
-        deleteBtn.style.display = 'none';
-      }
+      deleteBtn.style.display = selectedSongIds.size > 0 ? 'inline-flex' : 'none';
     }
 
     function toggleSelectAll() {
