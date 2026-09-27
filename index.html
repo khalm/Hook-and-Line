@@ -214,6 +214,16 @@
       word-break: break-word;
       user-select: text;
       -webkit-user-select: text;
+      position: relative;
+    }
+
+    /* Modern Placeholder behavior */
+    #editor-content:empty::before,
+    #editor-content.show-placeholder::before {
+      content: attr(data-placeholder);
+      color: var(--muted);
+      pointer-events: none;
+      display: block;
     }
 
     /* Section Header Pills */
@@ -483,7 +493,7 @@
       <div class="meter-rail" id="meter-rail"></div>
       
       <!-- ContentEditable Studio Editor -->
-      <div id="editor-content" contenteditable="true" spellcheck="false"></div>
+      <div id="editor-content" contenteditable="true" spellcheck="false" data-placeholder="Start typing lyrics..."></div>
 
       <!-- Floating Action Buttons -->
       <div class="floating-actions" id="floating-actions">
@@ -725,12 +735,26 @@
       document.getElementById('active-version-tag').innerText = ver.label;
       document.title = song.title + ' — Hook & Line';
 
-      editor.innerHTML = ver.html || '<div>Start typing your lyrics...</div>';
+      // Load clean html or empty editor with placeholder
+      const content = ver.html || '';
+      editor.innerHTML = content.trim() === 'Start typing lyrics...' ? '' : content;
+      checkPlaceholder();
+      
       bindChordListeners();
       bindSectionTagListeners();
       renumberVerses();
       updateMeter();
       saveState();
+    }
+
+    function checkPlaceholder() {
+      const text = editor.innerText.trim();
+      const hasBadges = editor.querySelector('.chord-badge, .section-header-tag');
+      if (!text && !hasBadges) {
+        editor.classList.add('show-placeholder');
+      } else {
+        editor.classList.remove('show-placeholder');
+      }
     }
 
     function bindChordListeners() {
@@ -762,6 +786,7 @@
           }
           renumberVerses();
           updateMeter();
+          checkPlaceholder();
         };
       });
     }
@@ -814,8 +839,13 @@
     });
 
     editor.addEventListener('input', () => { 
+      checkPlaceholder();
       renumberVerses();
       updateMeter(); 
+    });
+
+    editor.addEventListener('focus', () => {
+      checkPlaceholder();
     });
 
     function openTagModal() {
@@ -872,6 +902,7 @@
       bindSectionTagListeners();
       renumberVerses();
       updateMeter();
+      checkPlaceholder();
       showToast(`Added ${tag.innerText}`);
     }
 
@@ -962,6 +993,7 @@
       }
 
       bindChordListeners();
+      checkPlaceholder();
       showToast(`Placed ${chord}`);
       updateMeter();
     }
@@ -979,6 +1011,7 @@
       selectedChordElem.remove();
       selectedChordElem = null;
       showToast('Deleted chord');
+      checkPlaceholder();
       updateMeter();
     }
 
@@ -1135,17 +1168,36 @@
       closeSaveDialog();
     }
 
+    function getNextUnnamedSongTitle() {
+      let maxNum = 0;
+      const regex = /^Unnamed Song(?:\s+(\d+))?$/i;
+      state.songs.forEach(s => {
+        const match = s.title.trim().match(regex);
+        if (match) {
+          const num = match[1] ? parseInt(match[1], 10) : 1;
+          if (num > maxNum) maxNum = num;
+        }
+      });
+      return `Unnamed Song ${maxNum + 1}`;
+    }
+
     function createNewSong(promptUser = true) {
-      let name = 'Untitled Song';
+      let name = '';
       if (promptUser) {
-        const input = prompt('Song title:');
-        if (!input || !input.trim()) return;
+        const input = prompt('Song title (leave blank for Unnamed Song):');
+        if (input === null) return; // User pressed Cancel
         name = input.trim();
       }
+      
+      // Auto-name if empty
+      if (!name) {
+        name = getNextUnnamedSongTitle();
+      }
+
       const newSong = {
         id: 's_' + Date.now(),
         title: name,
-        versions: [{ id: 'v_' + Date.now(), label: 'v1', html: '<div>Start typing lyrics...</div>', updatedAt: Date.now() }]
+        versions: [{ id: 'v_' + Date.now(), label: 'v1', html: '', updatedAt: Date.now() }]
       };
       state.songs.unshift(newSong);
       loadSong(newSong.id, newSong.versions[0].id);
