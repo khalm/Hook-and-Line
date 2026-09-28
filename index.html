@@ -11,22 +11,24 @@
   <link rel="icon" type="image/png" sizes="32x32" href="android-pwa-192.png">
   <link rel="shortcut icon" href="android-pwa-192.png">
   <link rel="apple-touch-icon" href="android-playstore-512.png">
-  <meta name="theme-color" content="#18191e">
+  <meta name="theme-color" content="#13141a">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
   <style>
     :root {
-      --bg: #0f1013;
-      --surface: #18191e;
-      --card: #20222a;
-      --border: #2c2e3a;
-      --border-light: #3a3d4d;
-      --accent: #d9383a;
-      --chord-color: #a0a4b5;
+      --bg: #0b0c10;
+      --surface: #13141a;
+      --surface-2: #1b1d26;
+      --surface-3: #242735;
+      --border: #222533;
+      --border-light: #2d3142;
+      --accent: #e54245;
+      --accent-glow: rgba(229, 66, 69, 0.35);
+      --chord-color: #9aa3be;
       --section-color: #ffd166;
-      --text: #f0f1f5;
-      --muted: #8b8ea0;
+      --text: #f3f4f8;
+      --muted: #787d95;
       --editor-line-height: 38px;
     }
 
@@ -34,55 +36,35 @@
       --editor-line-height: 26px;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
     html, body { height: 100%; height: 100dvh; overflow: hidden; background: var(--bg); color: var(--text); }
     body { display: flex; flex-direction: column; }
 
-    /* 1500ms Splash Screen */
+    /* Splash Screen */
     #splash-screen {
       position: fixed;
       inset: 0;
-      background: #0f1013;
+      background: var(--bg);
       z-index: 9999;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 16px;
+      gap: 14px;
       transition: opacity 0.4s ease-out, visibility 0.4s ease-out;
     }
-    #splash-screen.fade-out {
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-    }
-    .splash-logo {
-      width: 96px;
-      height: 96px;
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-      object-fit: cover;
-    }
-    .splash-title {
-      font-size: 24px;
-      font-weight: 800;
-      letter-spacing: -0.5px;
-      color: #fff;
-    }
+    #splash-screen.fade-out { opacity: 0; visibility: hidden; pointer-events: none; }
+    .splash-logo { width: 88px; height: 88px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.8); object-fit: cover; }
+    .splash-title { font-size: 24px; font-weight: 800; letter-spacing: -0.5px; color: #fff; }
     .splash-title span { color: var(--accent); }
-    .splash-tagline {
-      font-size: 13px;
-      color: var(--muted);
-      letter-spacing: 0.5px;
-    }
+    .splash-tagline { font-size: 13px; color: var(--muted); }
 
-    /* Fixed Top Studio Header (Locked from collapsing) */
+    /* Sleek Top Studio Bar */
     header {
-      height: 48px;
-      min-height: 48px;
-      max-height: 48px;
-      padding: 0 8px;
-      background: var(--surface);
+      height: 50px;
+      padding: 0 10px;
+      background: rgba(19, 20, 26, 0.95);
+      backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
@@ -93,53 +75,58 @@
     }
     .header-left { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
     .song-pill {
-      background: var(--card);
+      background: var(--surface-2);
       border: 1px solid var(--border);
-      border-radius: 18px;
-      padding: 4px 8px;
+      border-radius: 20px;
+      padding: 5px 10px;
       display: flex;
       align-items: center;
       gap: 6px;
       cursor: pointer;
       max-width: 100%;
       min-width: 0;
+      transition: border-color 0.2s;
     }
+    .song-pill:active { border-color: var(--accent); }
     .song-title-text { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
-    .version-tag { font-size: 10px; background: #2f3240; color: #b0b4c8; padding: 1px 4px; border-radius: 4px; flex-shrink: 0; }
+    .version-tag { font-size: 10px; background: var(--surface-3); color: #a4abbd; padding: 1px 5px; border-radius: 4px; flex-shrink: 0; font-weight: 600; }
 
     .header-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
-    .btn {
-      background: var(--card);
+
+    .icon-btn {
+      background: var(--surface-2);
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 5px 8px;
-      border-radius: 6px;
+      padding: 6px 9px;
+      border-radius: 7px;
       font-size: 11px;
       font-weight: 600;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 3px;
+      gap: 4px;
       flex-shrink: 0;
+      transition: background 0.15s, border-color 0.15s;
     }
+    .icon-btn:active { background: var(--surface-3); }
     .btn-accent { background: var(--accent); border-color: var(--accent); color: #fff; }
-    .btn-danger { background: #2a1618; border-color: #5c1f24; color: #ff8589; }
-    .btn-toggle-active { background: #232738; border-color: #4b526d; color: #8fd2ff; }
-    .btn-recording { background: #d9383a !important; color: #fff !important; animation: pulse-red 1.2s infinite ease-in-out; }
+    .btn-accent:active { opacity: 0.9; }
+    .btn-toggle-active { background: #1f2538; border-color: #3f496e; color: #8ec2ff; }
+    .btn-recording { background: var(--accent) !important; color: #fff !important; animation: pulse-red 1.2s infinite ease-in-out; }
 
     @keyframes pulse-red {
-      0% { box-shadow: 0 0 0 0 rgba(217, 56, 58, 0.7); }
-      70% { box-shadow: 0 0 0 8px rgba(217, 56, 58, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(217, 56, 58, 0); }
+      0% { box-shadow: 0 0 0 0 rgba(229, 66, 69, 0.7); }
+      70% { box-shadow: 0 0 0 8px rgba(229, 66, 69, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(229, 66, 69, 0); }
     }
 
-    /* Voice Scratchpad Audio Player Bar */
+    /* Voice Memo Bar */
     .memo-bar {
       display: none;
       align-items: center;
       gap: 8px;
-      padding: 4px 10px;
-      background: #151720;
+      padding: 5px 12px;
+      background: #141724;
       border-bottom: 1px solid var(--border);
       font-size: 11px;
       flex-shrink: 0;
@@ -147,19 +134,18 @@
     .memo-bar.visible { display: flex; }
     .memo-bar audio { height: 26px; flex: 1; outline: none; }
     .memo-btn {
-      background: var(--card);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 3px 6px;
+      background: var(--surface-3);
+      border: 1px solid var(--border-light);
+      color: #ff7579;
+      padding: 4px 8px;
       border-radius: 4px;
       font-size: 10px;
       cursor: pointer;
-      white-space: nowrap;
     }
 
-    /* Collapsible Chords Strip */
+    /* Clean Collapsible Chords Strip */
     .chord-strip-container {
-      background: #14151a;
+      background: var(--surface);
       border-bottom: 1px solid var(--border);
       display: flex;
       flex-direction: column;
@@ -175,7 +161,6 @@
       cursor: pointer;
       user-select: none;
     }
-    .chord-strip-header:active { background: #191b22; }
     .chord-collapse-toggle {
       background: transparent;
       border: none;
@@ -187,19 +172,17 @@
 
     .chord-strip-content {
       display: flex;
-      gap: 6px;
+      gap: 5px;
       padding: 2px 10px 6px 10px;
       overflow-x: auto;
       white-space: nowrap;
       align-items: center;
     }
     .chord-strip-container.collapsed .chord-strip-content { display: none; }
-    .chord-strip-container.collapsed .chord-strip-header { padding: 5px 10px; }
-
     .chord-divider { width: 1px; height: 18px; background: var(--border-light); margin: 0 2px; flex-shrink: 0; }
 
     .chord-pill {
-      background: var(--card);
+      background: var(--surface-2);
       border: 1px solid var(--border);
       color: var(--chord-color);
       font-weight: 700;
@@ -210,12 +193,11 @@
       flex-shrink: 0;
     }
     .chord-pill:active { background: var(--accent); color: #fff; }
-    .chord-pill-delete { background: #2a1618; border-color: #5c1f24; color: #ff8589; }
+    .chord-pill-delete { background: #261517; border-color: #4f1d21; color: #ff8589; }
 
-    /* Workspace */
+    /* Workspace & Editor */
     .workspace { display: flex; flex: 1; min-height: 0; flex-direction: column; overflow: hidden; position: relative; }
 
-    /* Studio Editor */
     .editor-section {
       flex: 1;
       min-height: 0;
@@ -225,14 +207,14 @@
       background: var(--bg);
     }
     .meter-rail {
-      width: 38px;
-      background: rgba(0,0,0,0.25);
+      width: 36px;
+      background: rgba(0,0,0,0.18);
       border-right: 1px solid var(--border);
       color: var(--muted);
       font-size: 11px;
       font-family: monospace;
       text-align: right;
-      padding: 14px 8px 0 0;
+      padding: 14px 6px 0 0;
       user-select: none;
       overflow: hidden;
       flex-shrink: 0;
@@ -243,11 +225,7 @@
       line-height: var(--editor-line-height);
       transition: height 0.15s ease, line-height 0.15s ease;
     }
-    .meter-item.section-spacer {
-      height: 28px;
-      line-height: 28px;
-      color: transparent;
-    }
+    .meter-item.section-spacer { height: 28px; line-height: 28px; color: transparent; }
 
     #editor-content {
       flex: 1;
@@ -261,7 +239,6 @@
       white-space: pre-wrap;
       word-break: break-word;
       user-select: text;
-      -webkit-user-select: text;
       position: relative;
       transition: line-height 0.15s ease;
     }
@@ -273,21 +250,20 @@
       display: block;
     }
 
-    /* Word & Line Count Stats */
     .editor-footer-stats {
       position: absolute;
       bottom: 4px;
-      left: 44px;
+      left: 42px;
       font-size: 11px;
       color: var(--muted);
       pointer-events: none;
-      background: rgba(15, 16, 19, 0.85);
+      background: rgba(11, 12, 16, 0.85);
       padding: 2px 6px;
       border-radius: 4px;
       z-index: 5;
     }
 
-    /* Section Header Pills - Full Block Isolation */
+    /* Section Header Pills */
     .section-header-tag {
       display: block;
       width: fit-content;
@@ -306,9 +282,6 @@
       user-select: none;
       cursor: pointer;
     }
-    .section-header-tag:hover {
-      background: rgba(255, 209, 102, 0.22);
-    }
 
     /* Inline Placed Chords */
     .chord-badge {
@@ -319,10 +292,7 @@
       overflow: visible;
       user-select: none;
     }
-
-    body.hide-chords .chord-badge {
-      display: none !important;
-    }
+    body.hide-chords .chord-badge { display: none !important; }
 
     .chord-badge-inner {
       position: absolute;
@@ -330,10 +300,10 @@
       left: 0;
       font-size: 11px;
       font-weight: 700;
-      font-family: 'SF Mono', Menlo, Consolas, monospace;
+      font-family: monospace;
       color: var(--chord-color);
-      background: #1e2029;
-      border: 1px solid #363949;
+      background: #1b1d28;
+      border: 1px solid #35384b;
       border-radius: 4px;
       padding: 0 4px;
       line-height: 16px;
@@ -347,10 +317,10 @@
       background: var(--accent);
       border-color: #ff7b80;
       color: #fff;
-      box-shadow: 0 0 8px rgba(217, 56, 58, 0.7);
+      box-shadow: 0 0 8px var(--accent-glow);
     }
 
-    /* Floating Action Pin Container */
+    /* Floating Action Pin */
     .floating-actions {
       position: absolute;
       top: 10px;
@@ -364,19 +334,19 @@
       color: #fff;
       border: 1px solid #ff7b80;
       border-radius: 18px;
-      padding: 8px 14px;
+      padding: 7px 12px;
       font-size: 12px;
       font-weight: 700;
       box-shadow: 0 4px 16px rgba(0,0,0,0.8);
       cursor: pointer;
     }
     .floating-btn-tag {
-      background: #2a2510;
+      background: #282415;
       border-color: var(--section-color);
       color: var(--section-color);
     }
 
-    /* Resizable Reference Drawer */
+    /* Reference Drawer */
     .reference-suite {
       height: 44%;
       min-height: 110px;
@@ -405,33 +375,93 @@
     }
     .resize-handle::after {
       content: "";
-      width: 36px;
-      height: 4px;
+      width: 32px;
+      height: 3px;
       background: var(--border-light);
       border-radius: 2px;
     }
-    .resize-handle:active::after { background: var(--accent); }
 
-    .search-dock { padding: 6px 10px; border-bottom: 1px solid var(--border); display: flex; gap: 6px; align-items: center; flex-shrink: 0; }
+    /* Studio Search Dock with Language Toggle */
+    .search-dock {
+      padding: 6px 10px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .lang-toggle-wrap {
+      display: inline-flex;
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 2px;
+      flex-shrink: 0;
+    }
+    .lang-opt {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+      padding: 3px 6px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .lang-opt.active {
+      background: var(--surface-3);
+      color: #fff;
+    }
+
     .search-dock input {
       flex: 1;
       padding: 6px 10px;
-      background: #111215;
+      background: var(--bg);
       border: 1px solid var(--border);
       border-radius: 6px;
       color: #fff;
       font-size: 13px;
+      outline: none;
     }
+    .search-dock input:focus { border-color: var(--border-light); }
 
-    .category-pills { display: flex; gap: 6px; padding: 6px 10px; border-bottom: 1px solid var(--border); overflow-x: auto; white-space: nowrap; flex-shrink: 0; }
-    .category-btn { background: transparent; border: 1px solid var(--border); border-radius: 14px; color: var(--muted); padding: 3px 9px; font-size: 11px; font-weight: 600; cursor: pointer; flex-shrink: 0; }
+    /* Studio Mode Navigation */
+    .category-pills {
+      display: flex;
+      gap: 5px;
+      padding: 5px 10px;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .category-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--muted);
+      padding: 3px 9px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: all 0.15s;
+    }
     .category-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+    
+    /* Disabled/Grayed out category states in Norwegian Mode */
+    .category-btn.disabled {
+      opacity: 0.35;
+      cursor: not-allowed;
+      pointer-events: none;
+      border-style: dashed;
+    }
 
     /* Alliteration A-Z Sub-Bar */
     .alliteration-strip {
       display: none;
       padding: 4px 10px;
-      background: #14151a;
+      background: var(--surface-2);
       border-bottom: 1px solid var(--border);
       overflow-x: auto;
       white-space: nowrap;
@@ -440,7 +470,7 @@
     }
     .alliteration-strip.visible { display: flex; }
     .letter-btn {
-      background: var(--card);
+      background: var(--surface);
       border: 1px solid var(--border);
       color: var(--muted);
       border-radius: 4px;
@@ -456,45 +486,44 @@
     }
     .letter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-    /* MasterWriter Collected Tray */
+    /* Collected Ideas Bar */
     .collected-dock {
       display: flex;
       align-items: center;
       gap: 6px;
       padding: 4px 10px;
-      background: #121317;
+      background: #0f1016;
       border-bottom: 1px solid var(--border);
       overflow-x: auto;
       white-space: nowrap;
       font-size: 11px;
       flex-shrink: 0;
     }
-    .collected-label { color: var(--muted); font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; }
+    .collected-label { color: var(--muted); font-weight: 700; text-transform: uppercase; font-size: 9px; letter-spacing: 0.5px; }
     .collected-chip {
-      background: #232733;
+      background: var(--surface-2);
       color: #9ac7ff;
-      border: 1px solid #3d465c;
+      border: 1px solid #333a4f;
       padding: 2px 7px;
-      border-radius: 12px;
+      border-radius: 10px;
       display: inline-flex;
       align-items: center;
       gap: 4px;
       cursor: pointer;
     }
-    .collected-chip:hover { background: #2f3547; }
     .collected-chip .remove-chip { color: var(--muted); font-weight: bold; }
 
     .dictionary-feed { flex: 1; min-height: 0; overflow-y: auto; padding: 10px; display: flex; flex-direction: column; gap: 12px; }
-    .syllable-group-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+    .syllable-group-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; font-weight: 700; }
     .syllable-group-title::after { content: ""; flex: 1; height: 1px; background: var(--border); }
     
-    .chips-cluster { display: flex; flex-wrap: wrap; gap: 6px; }
+    .chips-cluster { display: flex; flex-wrap: wrap; gap: 5px; }
 
     .word-card { 
-      background: var(--card); 
+      background: var(--surface-2); 
       border: 1px solid var(--border); 
-      border-radius: 6px; 
-      padding: 5px 9px; 
+      border-radius: 5px; 
+      padding: 4px 8px; 
       font-size: 13px; 
       cursor: pointer; 
       display: inline-flex; 
@@ -504,38 +533,35 @@
     }
     .word-card:active { background: var(--accent); color: #fff; }
     .word-card span { font-size: 10px; color: var(--muted); font-family: monospace; }
-    .word-card .collect-btn { color: var(--muted); font-size: 12px; margin-left: 2px; }
-    .word-card .collect-btn:hover { color: #fff; }
+    .word-card .collect-btn { color: var(--muted); font-size: 12px; }
 
     .phrase-card {
-      background: #17181f;
+      background: var(--surface-2);
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 8px 12px;
+      padding: 7px 10px;
       font-size: 13px;
-      color: #e2e4ec;
+      color: var(--text);
       cursor: pointer;
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 4px;
-      user-select: none;
     }
     .phrase-card:active { background: var(--accent); color: #fff; border-color: var(--accent); }
-    .phrase-card span { font-size: 10px; color: var(--muted); }
 
-    /* Modals */
+    /* Modals & Dropdowns */
     .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 200; }
     .overlay.active { display: flex; }
-    .dialog { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; width: 100%; max-width: 440px; max-height: 82vh; display: flex; flex-direction: column; overflow: hidden; }
-    .dialog-header { padding: 12px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .dialog { background: var(--surface); border: 1px solid var(--border-light); border-radius: 12px; width: 100%; max-width: 440px; max-height: 82vh; display: flex; flex-direction: column; overflow: hidden; }
+    .dialog-header { padding: 12px 14px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
     
     .catalog-actions-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 8px 14px;
-      background: #14151a;
+      padding: 6px 12px;
+      background: var(--surface-2);
       border-bottom: 1px solid var(--border);
       font-size: 12px;
       gap: 6px;
@@ -543,28 +569,28 @@
     .dialog-body { flex: 1; overflow-y: auto; padding: 10px 12px; }
 
     .song-row {
-      padding: 10px 12px;
-      background: #141519;
+      padding: 9px 12px;
+      background: var(--surface-2);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      margin-bottom: 8px;
+      border-radius: 7px;
+      margin-bottom: 6px;
       display: flex;
       align-items: center;
       gap: 10px;
       cursor: pointer;
     }
     .song-row.active { border-color: var(--accent); }
-    .song-checkbox { width: 18px; height: 18px; accent-color: var(--accent); cursor: pointer; }
+    .song-checkbox { width: 16px; height: 16px; accent-color: var(--accent); cursor: pointer; }
     .song-info { flex: 1; overflow: hidden; }
-    .song-name { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .song-name { font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-    .btn-delete-song { background: transparent; border: 1px solid #4a2125; color: #ff6b70; border-radius: 6px; padding: 4px 8px; font-size: 12px; cursor: pointer; }
+    .btn-delete-song { background: transparent; border: 1px solid #4a2125; color: #ff6b70; border-radius: 5px; padding: 3px 6px; font-size: 11px; cursor: pointer; }
 
-    .popover-menu { position: fixed; background: #20222a; border: 1px solid var(--border-light); border-radius: 8px; z-index: 300; display: none; min-width: 180px; }
-    .popover-item { padding: 10px 14px; font-size: 13px; border-bottom: 1px solid var(--border); cursor: pointer; }
+    .popover-menu { position: fixed; background: var(--surface-2); border: 1px solid var(--border-light); border-radius: 8px; z-index: 300; display: none; min-width: 170px; }
+    .popover-item { padding: 9px 12px; font-size: 12px; border-bottom: 1px solid var(--border); cursor: pointer; }
     .popover-item:last-child { border-bottom: none; }
 
-    #toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: rgba(30, 32, 40, 0.95); border: 1px solid var(--border-light); color: #fff; font-size: 12px; font-weight: 600; padding: 8px 16px; border-radius: 20px; z-index: 500; display: none; }
+    #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(27, 29, 38, 0.95); border: 1px solid var(--border-light); color: #fff; font-size: 12px; font-weight: 600; padding: 6px 14px; border-radius: 16px; z-index: 500; display: none; }
 
     /* Print Output */
     #all-songs-print-container { display: none; }
@@ -585,13 +611,14 @@
 </head>
 <body>
 
-  <!-- 1500ms Splash Screen -->
+  <!-- Splash Screen -->
   <div id="splash-screen">
     <img src="android-playstore-512.png" alt="Hook & Line" class="splash-logo" onerror="this.style.display='none'">
     <div class="splash-title">Hook <span>&</span> Line</div>
     <div class="splash-tagline">Songwriting & Lyric Studio</div>
   </div>
 
+  <!-- Sleek Studio Header -->
   <header>
     <div class="header-left">
       <div class="song-pill" onclick="openSongCatalog()">
@@ -600,25 +627,24 @@
       </div>
     </div>
     <div class="header-actions">
-      <!-- Record Audio Memo & Transcribe -->
-      <button class="btn" id="record-btn" onclick="toggleAudioRecording()">🎙️ Rec</button>
-      <button class="btn" id="chord-visibility-btn" onclick="toggleChordVisibility()">Chords: On</button>
-      <button class="btn" onclick="exportSinglePDF()">PDF</button>
-      <button class="btn btn-accent" onclick="openSaveDialog()">Save</button>
+      <button class="icon-btn" id="record-btn" onclick="toggleAudioRecording()">🎙️ Rec</button>
+      <button class="icon-btn" id="chord-visibility-btn" onclick="toggleChordVisibility()">Chords: On</button>
+      <button class="icon-btn" onclick="exportSinglePDF()">PDF</button>
+      <button class="icon-btn btn-accent" onclick="openSaveDialog()">Save</button>
     </div>
   </header>
 
   <!-- Audio Voice Memo Bar -->
   <div class="memo-bar" id="memo-bar">
-    <span style="font-weight:700; color:var(--muted); font-size:10px;">MEMO:</span>
+    <span style="font-weight:700; color:var(--muted); font-size:10px;">TAKE:</span>
     <audio id="memo-audio" controls></audio>
-    <button class="memo-btn" onclick="deleteAudioMemo()">Delete</button>
+    <button class="memo-btn" onclick="deleteAudioMemo()">Del</button>
   </div>
 
   <!-- Collapsible Complete Chords Strip -->
   <div class="chord-strip-container collapsed" id="chord-strip-container">
     <div class="chord-strip-header" onclick="toggleChordsCollapse()">
-      <span>Quick Chords (Tap chord to insert/swap)</span>
+      <span>Quick Chords</span>
       <button class="chord-collapse-toggle" id="chord-collapse-btn">Show ▼</button>
     </div>
     <div class="chord-strip-content">
@@ -663,7 +689,7 @@
     <div class="editor-section">
       <div class="meter-rail" id="meter-rail"></div>
       
-      <!-- ContentEditable Studio Editor with dynamic dummy placeholder -->
+      <!-- ContentEditable Studio Editor -->
       <div id="editor-content" contenteditable="true" spellcheck="false" data-placeholder="Start typing lyrics..."></div>
       
       <div class="editor-footer-stats" id="editor-footer-stats">Words: 0 · Lines: 0</div>
@@ -677,24 +703,30 @@
       <div id="all-songs-print-container"></div>
     </div>
 
-    <!-- Resizable MasterWriter Studio Reference Drawer -->
+    <!-- MasterWriter Studio Reference Drawer -->
     <div class="reference-suite" id="reference-suite">
-      <div class="resize-handle" id="resize-handle" title="Drag up or down to resize"></div>
+      <div class="resize-handle" id="resize-handle" title="Drag to resize"></div>
 
       <div class="search-dock">
+        <!-- Modern Language Toggle -->
+        <div class="lang-toggle-wrap">
+          <button class="lang-opt active" id="lang-en-btn" onclick="setLanguage('en')">EN</button>
+          <button class="lang-opt" id="lang-no-btn" onclick="setLanguage('no')">NO</button>
+        </div>
+
         <input type="text" id="query-field" placeholder="Search reference term...">
-        <button class="btn btn-accent" onclick="triggerManualSearch()">Find</button>
+        <button class="icon-btn btn-accent" onclick="triggerManualSearch()">Find</button>
       </div>
 
-      <!-- Studio Mode Navigation -->
+      <!-- Category Filter Pills -->
       <div class="category-pills">
         <button class="category-btn active" data-mode="rel_rhy">Rhymes</button>
         <button class="category-btn" data-mode="rel_nry">Near Rhymes</button>
-        <button class="category-btn" data-mode="phrases">Phrases</button>
-        <button class="category-btn" data-mode="idioms">Idioms & Sayings</button>
-        <button class="category-btn" data-mode="alliterations">Alliterations</button>
+        <button class="category-btn" data-mode="phrases" id="cat-phrases">Phrases</button>
+        <button class="category-btn" data-mode="idioms" id="cat-idioms">Idioms & Sayings</button>
+        <button class="category-btn" data-mode="alliterations" id="cat-alliterations">Alliterations</button>
         <button class="category-btn" data-mode="rel_syn">Synonyms</button>
-        <button class="category-btn" data-mode="rel_trg">Word Families</button>
+        <button class="category-btn" data-mode="rel_trg" id="cat-trg">Word Families</button>
       </div>
 
       <!-- Alliteration Letters Strip (A-Z) -->
@@ -702,31 +734,31 @@
 
       <!-- Collected Scratchpad Tray -->
       <div class="collected-dock" id="collected-dock">
-        <span class="collected-label">Collected:</span>
+        <span class="collected-label">Saved:</span>
         <div id="collected-chips-container" style="display:inline-flex; gap:4px; overflow-x:auto;">
-          <span style="color:var(--muted); font-style:italic;">Tap ⭐ to save ideas here</span>
+          <span style="color:var(--muted); font-style:italic;">Tap ⭐ on words to save here</span>
         </div>
       </div>
 
       <div class="dictionary-feed" id="dictionary-feed">
-        <span style="color:var(--muted); font-size:12px;">Mark or select any word to load reference.</span>
+        <span style="color:var(--muted); font-size:12px;">Mark or select any word to load studio reference.</span>
       </div>
     </div>
   </div>
 
-  <!-- Section Tagging Modal -->
+  <!-- Tag Section Modal -->
   <div class="overlay" id="tag-modal">
-    <div class="dialog" style="max-width:320px;">
+    <div class="dialog" style="max-width:300px;">
       <div class="dialog-header">
         <strong>Tag Section</strong>
-        <button class="btn" onclick="closeTagModal()">Cancel</button>
+        <button class="icon-btn" onclick="closeTagModal()">Cancel</button>
       </div>
-      <div class="dialog-body" style="display:flex; flex-direction:column; gap:8px; padding:14px;">
-        <button class="btn" style="padding:10px; justify-content:flex-start;" onclick="applySectionTag('verse')">Verse (Auto-numbered)</button>
-        <button class="btn" style="padding:10px; justify-content:flex-start;" onclick="applySectionTag('pre-chorus')">Pre-Chorus</button>
-        <button class="btn" style="padding:10px; justify-content:flex-start;" onclick="applySectionTag('chorus')">Chorus</button>
-        <button class="btn" style="padding:10px; justify-content:flex-start;" onclick="applySectionTag('bridge')">Bridge</button>
-        <button class="btn btn-accent" style="padding:10px; justify-content:flex-start;" onclick="promptCustomTag()">+ Custom Tag...</button>
+      <div class="dialog-body" style="display:flex; flex-direction:column; gap:7px; padding:12px;">
+        <button class="icon-btn" style="padding:9px; justify-content:flex-start;" onclick="applySectionTag('verse')">Verse (Auto-numbered)</button>
+        <button class="icon-btn" style="padding:9px; justify-content:flex-start;" onclick="applySectionTag('pre-chorus')">Pre-Chorus</button>
+        <button class="icon-btn" style="padding:9px; justify-content:flex-start;" onclick="applySectionTag('chorus')">Chorus</button>
+        <button class="icon-btn" style="padding:9px; justify-content:flex-start;" onclick="applySectionTag('bridge')">Bridge</button>
+        <button class="icon-btn btn-accent" style="padding:9px; justify-content:flex-start;" onclick="promptCustomTag()">+ Custom Tag...</button>
       </div>
     </div>
   </div>
@@ -737,17 +769,17 @@
       <div class="dialog-header">
         <strong>Song Catalog</strong>
         <div style="display:flex; gap:6px;">
-          <button class="btn" onclick="createNewSong()">+ New</button>
-          <button class="btn" onclick="closeSongCatalog()">Close</button>
+          <button class="icon-btn" onclick="createNewSong()">+ New</button>
+          <button class="icon-btn" onclick="closeSongCatalog()">Close</button>
         </div>
       </div>
       
       <div class="catalog-actions-bar">
         <div style="display:flex; gap:6px;">
-          <button class="btn" style="padding:4px 8px; font-size:11px;" onclick="toggleSelectAll()">Select All</button>
-          <button class="btn btn-danger" id="delete-selected-btn" style="padding:4px 8px; font-size:11px; display:none;" onclick="deleteSelectedSongs()">Delete (0)</button>
+          <button class="icon-btn" style="padding:3px 7px; font-size:11px;" onclick="toggleSelectAll()">Select All</button>
+          <button class="icon-btn btn-danger" id="delete-selected-btn" style="padding:3px 7px; font-size:11px; display:none;" onclick="deleteSelectedSongs()">Delete (0)</button>
         </div>
-        <button class="btn btn-accent" id="export-selected-btn" style="padding:4px 10px; font-size:11px;" onclick="exportSelectedPDF()">
+        <button class="icon-btn btn-accent" id="export-selected-btn" style="padding:3px 8px; font-size:11px;" onclick="exportSelectedPDF()">
           Export Selected (0)
         </button>
       </div>
@@ -760,14 +792,14 @@
 
   <!-- Save Dialog -->
   <div class="overlay" id="save-overlay">
-    <div class="dialog">
+    <div class="dialog" style="max-width:320px;">
       <div class="dialog-header">
         <strong>Save Song</strong>
-        <button class="btn" onclick="closeSaveDialog()">Cancel</button>
+        <button class="icon-btn" onclick="closeSaveDialog()">Cancel</button>
       </div>
-      <div class="dialog-body" style="display:flex; flex-direction:column; gap:10px; padding:16px;">
-        <button class="btn" style="padding:14px;" onclick="commitSave('overwrite')">Overwrite Current Version</button>
-        <button class="btn btn-accent" style="padding:14px;" onclick="commitSave('new-version')">Save as New Version</button>
+      <div class="dialog-body" style="display:flex; flex-direction:column; gap:8px; padding:14px;">
+        <button class="icon-btn" style="padding:12px;" onclick="commitSave('overwrite')">Overwrite Current Version</button>
+        <button class="icon-btn btn-accent" style="padding:12px;" onclick="commitSave('new-version')">Save as New Version</button>
       </div>
     </div>
   </div>
@@ -779,12 +811,13 @@
     let collectedIdeas = [];
     let selectedSongIds = new Set();
     let activeFilterMode = 'rel_rhy';
+    let currentLanguage = 'en'; // 'en' or 'no'
     let selectedLetter = 'A';
     let selectedChordElem = null;
     let savedSelectionRange = null;
     let areChordsVisible = true;
 
-    // Audio & Transcription Variables
+    // Audio & Speech-to-Text
     let isRecording = false;
     let mediaRecorder = null;
     let audioChunks = [];
@@ -811,6 +844,9 @@
     const splashScreen = document.getElementById('splash-screen');
     const alliterationStrip = document.getElementById('alliteration-strip');
     const collectedContainer = document.getElementById('collected-chips-container');
+    const langEnBtn = document.getElementById('lang-en-btn');
+    const langNoBtn = document.getElementById('lang-no-btn');
+
     let selectedWord = '';
 
     window.addEventListener('load', () => {
@@ -843,9 +879,10 @@
       }
 
       const storedCollected = localStorage.getItem('hookandline_collected');
-      if (storedCollected) {
-        collectedIdeas = JSON.parse(storedCollected);
-      }
+      if (storedCollected) collectedIdeas = JSON.parse(storedCollected);
+
+      const savedLang = localStorage.getItem('hookandline_lang') || 'en';
+      setLanguage(savedLang, false);
 
       const isSavedCollapsed = localStorage.getItem('hookandline_chords_collapsed');
       if (isSavedCollapsed === 'false') {
@@ -862,11 +899,6 @@
         document.body.classList.add('hide-chords');
         chordVisibilityBtn.innerText = 'Chords: Off';
         chordVisibilityBtn.classList.add('btn-toggle-active');
-      } else {
-        areChordsVisible = true;
-        document.body.classList.remove('hide-chords');
-        chordVisibilityBtn.innerText = 'Chords: On';
-        chordVisibilityBtn.classList.remove('btn-toggle-active');
       }
 
       const savedHeight = localStorage.getItem('hookandline_drawer_height');
@@ -877,6 +909,48 @@
       initSpeechRecognition();
       initResizableDrawer();
       loadSong(state.activeSongId, state.activeVersionId);
+    }
+
+    // Language Toggle logic & UI adaptation
+    function setLanguage(lang, triggerSearch = true) {
+      currentLanguage = lang;
+      localStorage.setItem('hookandline_lang', lang);
+
+      langEnBtn.classList.toggle('active', lang === 'en');
+      langNoBtn.classList.toggle('active', lang === 'no');
+
+      const unsupportedCats = ['cat-phrases', 'cat-idioms', 'cat-alliterations', 'cat-trg'];
+      if (lang === 'no') {
+        unsupportedCats.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.classList.add('disabled');
+        });
+
+        // Fall back to Rhymes if user was on an unsupported tab
+        if (['phrases', 'idioms', 'alliterations', 'rel_trg'].includes(activeFilterMode)) {
+          switchTab('rel_rhy');
+        }
+        queryField.placeholder = "Søk rim og synonymer...";
+      } else {
+        unsupportedCats.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.classList.remove('disabled');
+        });
+        queryField.placeholder = "Search reference term...";
+      }
+
+      if (triggerSearch) {
+        const term = queryField.value.trim() || selectedWord;
+        if (term) executeLookup(term);
+      }
+    }
+
+    function switchTab(mode) {
+      document.querySelectorAll('.category-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.mode === mode);
+      });
+      activeFilterMode = mode;
+      alliterationStrip.classList.toggle('visible', mode === 'alliterations');
     }
 
     // Audio Voice Memo & Speech-to-Text Transcription
@@ -894,7 +968,6 @@
           }
           transcribedText = current.trim();
         };
-
         recognition.onerror = () => {};
       }
     }
@@ -912,23 +985,20 @@
 
           mediaRecorder.start();
           if (recognition) {
+            recognition.lang = currentLanguage === 'no' ? 'nb-NO' : 'en-US';
             try { recognition.start(); } catch (err) {}
           }
 
           isRecording = true;
           recordBtn.innerText = '⏹ Stop';
           recordBtn.classList.add('btn-recording');
-          showToast('Recording voice take & transcribing...');
+          showToast(currentLanguage === 'no' ? 'Tar opp og transkriberer...' : 'Recording & transcribing...');
         } catch (err) {
           alert('Microphone access denied or not supported on this browser.');
         }
       } else {
-        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-          mediaRecorder.stop();
-        }
-        if (recognition) {
-          try { recognition.stop(); } catch (err) {}
-        }
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') mediaRecorder.stop();
+        if (recognition) try { recognition.stop(); } catch (err) {}
         isRecording = false;
         recordBtn.innerText = '🎙️ Rec';
         recordBtn.classList.remove('btn-recording');
@@ -940,7 +1010,6 @@
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64Audio = reader.result;
-        
         const song = state.songs.find(s => s.id === state.activeSongId);
         if (song) {
           const ver = song.versions.find(v => v.id === state.activeVersionId);
@@ -956,9 +1025,9 @@
           textDiv.innerText = transcribedText;
           editor.appendChild(textDiv);
           updateMeter();
-          showToast(`Saved memo & transcribed "${transcribedText.slice(0, 20)}..."`);
+          showToast(`Transcribed: "${transcribedText.slice(0, 18)}..."`);
         } else {
-          showToast('Voice memo saved to song');
+          showToast('Audio saved to song');
         }
       };
       reader.readAsDataURL(audioBlob);
@@ -983,7 +1052,7 @@
           ver.audioMemo = null;
           saveState();
           displayAudioMemo(null);
-          showToast('Audio memo deleted');
+          showToast('Audio deleted');
         }
       }
     }
@@ -1008,17 +1077,9 @@
 
     function toggleChordVisibility() {
       areChordsVisible = !areChordsVisible;
-      if (areChordsVisible) {
-        document.body.classList.remove('hide-chords');
-        chordVisibilityBtn.innerText = 'Chords: On';
-        chordVisibilityBtn.classList.remove('btn-toggle-active');
-        showToast('Chords visible');
-      } else {
-        document.body.classList.add('hide-chords');
-        chordVisibilityBtn.innerText = 'Chords: Off';
-        chordVisibilityBtn.classList.add('btn-toggle-active');
-        showToast('Chords hidden');
-      }
+      document.body.classList.toggle('hide-chords', !areChordsVisible);
+      chordVisibilityBtn.innerText = areChordsVisible ? 'Chords: On' : 'Chords: Off';
+      chordVisibilityBtn.classList.toggle('btn-toggle-active', !areChordsVisible);
       localStorage.setItem('hookandline_chords_visible', areChordsVisible ? 'true' : 'false');
       updateMeter();
     }
@@ -1167,9 +1228,7 @@
 
     function saveCurrentRange() {
       const sel = window.getSelection();
-      if (sel && sel.rangeCount > 0) {
-        savedSelectionRange = sel.getRangeAt(0);
-      }
+      if (sel && sel.rangeCount > 0) savedSelectionRange = sel.getRangeAt(0);
     }
 
     let selectionTimeout = null;
@@ -1189,7 +1248,7 @@
 
         const markedText = sel.toString().trim();
         if (markedText.length > 0) {
-          const cleanTerm = markedText.replace(/[^a-zA-Z\s]/g, '').trim();
+          const cleanTerm = markedText.replace(/[^a-zA-ZæøåÆØÅ\s]/g, '').trim();
           if (cleanTerm.length > 1) {
             selectedWord = cleanTerm;
             findRhymesBtn.innerText = `Rhymes: "${selectedWord.slice(0, 10)}${selectedWord.length > 10 ? '...' : ''}"`;
@@ -1207,12 +1266,8 @@
       updateMeter(); 
     });
 
-    function openTagModal() {
-      document.getElementById('tag-modal').classList.add('active');
-    }
-    function closeTagModal() {
-      document.getElementById('tag-modal').classList.remove('active');
-    }
+    function openTagModal() { document.getElementById('tag-modal').classList.add('active'); }
+    function closeTagModal() { document.getElementById('tag-modal').classList.remove('active'); }
 
     function applySectionTag(type, customLabel) {
       closeTagModal();
@@ -1224,7 +1279,6 @@
         if (sel.rangeCount > 0) range = sel.getRangeAt(0);
       }
 
-      // Create tag element (block level)
       const tag = document.createElement('div');
       tag.className = 'section-header-tag';
       tag.contentEditable = 'false';
@@ -1236,14 +1290,12 @@
       else if (type === 'bridge') tag.innerText = 'Bridge';
       else tag.innerText = customLabel || 'Section';
 
-      // Dedicated blank lyric line directly below
       const nextRow = document.createElement('div');
       nextRow.innerHTML = '<br>';
 
       if (range) {
         let container = range.startContainer;
         if (container.nodeType === 3) container = container.parentNode;
-        
         while (container && container.parentNode !== editor && container !== editor) {
           container = container.parentNode;
         }
@@ -1260,7 +1312,6 @@
         editor.prepend(tag);
       }
 
-      // Place cursor into the next row
       const newRange = document.createRange();
       newRange.setStart(nextRow, 0);
       newRange.collapse(true);
@@ -1277,18 +1328,16 @@
 
     function promptCustomTag() {
       const custom = prompt('Enter custom section name (e.g. Outro, Solo, Intro):');
-      if (custom && custom.trim()) {
-        applySectionTag('custom', custom.trim());
-      }
+      if (custom && custom.trim()) applySectionTag('custom', custom.trim());
     }
 
     function countSyllables(word) {
-      word = word.toLowerCase().replace(/[^a-z]/g, '');
+      word = word.toLowerCase().replace(/[^a-zæøå]/g, '');
       if (!word) return 0;
       if (word.length <= 3) return 1;
-      word = word.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '');
+      word = word.replace(/(?:[^laeiouyæøå]es|ed|[^laeiouyæøå]e)$/, '');
       word = word.replace(/^y/, '');
-      const m = word.match(/[aeiouy]{1,2}/g);
+      const m = word.match(/[aeiouyæøå]{1,2}/g);
       return m ? m.length : 1;
     }
 
@@ -1355,7 +1404,6 @@
       if (range && editor.contains(range.commonAncestorContainer)) {
         range.deleteContents();
         range.insertNode(badge);
-
         range.setStartAfter(badge);
         range.setEndAfter(badge);
         const sel = window.getSelection();
@@ -1404,16 +1452,8 @@
 
     document.querySelectorAll('.category-btn').forEach(btn => {
       btn.addEventListener('click', () => {
-        document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        activeFilterMode = btn.dataset.mode;
-
-        if (activeFilterMode === 'alliterations') {
-          alliterationStrip.classList.add('visible');
-        } else {
-          alliterationStrip.classList.remove('visible');
-        }
-
+        if (btn.classList.contains('disabled')) return;
+        switchTab(btn.dataset.mode);
         const term = queryField.value.trim() || selectedWord;
         if (term) executeLookup(term);
       });
@@ -1431,7 +1471,7 @@
         if (collectedIdeas.length > 25) collectedIdeas.pop();
         localStorage.setItem('hookandline_collected', JSON.stringify(collectedIdeas));
         renderCollected();
-        showToast(`Collected "${word}"`);
+        showToast(`Saved "${word}"`);
       }
     }
 
@@ -1444,7 +1484,7 @@
 
     function renderCollected() {
       if (collectedIdeas.length === 0) {
-        collectedContainer.innerHTML = '<span style="color:var(--muted); font-style:italic;">Tap ⭐ to save ideas here</span>';
+        collectedContainer.innerHTML = '<span style="color:var(--muted); font-style:italic;">Tap ⭐ on words to save here</span>';
         return;
       }
       collectedContainer.innerHTML = collectedIdeas.map(item => `
@@ -1459,14 +1499,79 @@
       showToast(`Copied "${word}"`);
     }
 
-    // High Quality Datamuse Search with MasterWriter Modes
+    // Reference Engine (Dual Norwegian / English Support)
     async function executeLookup(term) {
       if (!term) return;
       queryField.value = term;
-      dictFeed.innerHTML = '<span style="color:var(--muted); font-size:12px;">Searching studio reference for "' + term + '"...</span>';
+      dictFeed.innerHTML = `<span style="color:var(--muted); font-size:12px;">${currentLanguage === 'no' ? 'Søker referanser for' : 'Searching studio reference for'} "${term}"...</span>`;
 
       try {
-        // Phrases (2-word collocations & pairings)
+        // --- NORWEGIAN MODE (Rimregisteret / Ordbok API) ---
+        if (currentLanguage === 'no') {
+          let url = '';
+          if (activeFilterMode === 'rel_rhy') {
+            url = `https://rimregisteret.no/api/v1/rim/${encodeURIComponent(term)}`;
+          } else if (activeFilterMode === 'rel_nry') {
+            url = `https://rimregisteret.no/api/v1/halvrim/${encodeURIComponent(term)}`;
+          } else if (activeFilterMode === 'rel_syn') {
+            url = `https://rimregisteret.no/api/v1/synonymer/${encodeURIComponent(term)}`;
+          }
+
+          let results = [];
+          try {
+            const res = await fetch(url);
+            if (res.ok) {
+              const data = await res.json();
+              results = Array.isArray(data) ? data : (data.results || data.ord || []);
+            }
+          } catch (netErr) {
+            // Fallback to Norwegian Wikipedia/Wiktionary search if API is unreachable
+            const fallbackRes = await fetch(`https://no.wiktionary.org/w/api.php?action=opensearch&search=${encodeURIComponent(term)}&limit=30&origin=*`);
+            const fallbackData = await fallbackRes.json();
+            if (fallbackData && fallbackData[1]) {
+              results = fallbackData[1].map(w => ({ ord: w, stavelser: countSyllables(w) }));
+            }
+          }
+
+          dictFeed.innerHTML = '';
+          if (!results.length) {
+            dictFeed.innerHTML = `<span style="color:var(--muted); font-size:12px;">Ingen treff for "${term}".</span>`;
+            return;
+          }
+
+          const groups = { '1 Stavelse': [], '2 Stavelser': [], '3+ Stavelser': [] };
+          results.forEach(item => {
+            const word = typeof item === 'string' ? item : (item.ord || item.word);
+            const syl = (typeof item === 'object' && item.stavelser) ? item.stavelser : countSyllables(word);
+            if (syl === 1) groups['1 Stavelse'].push({ word, syl });
+            else if (syl === 2) groups['2 Stavelser'].push({ word, syl });
+            else groups['3+ Stavelser'].push({ word, syl });
+          });
+
+          for (const [title, list] of Object.entries(groups)) {
+            if (!list.length) continue;
+            const section = document.createElement('div');
+            section.innerHTML = `<div class="syllable-group-title">${title} (${list.length})</div>`;
+            const cluster = document.createElement('div');
+            cluster.className = 'chips-cluster';
+
+            list.forEach(item => {
+              const card = document.createElement('div');
+              card.className = 'word-card';
+              card.innerHTML = `${item.word} <span>${item.syl}</span> <span class="collect-btn" onclick="collectWord('${item.word.replace(/'/g, "\\'")}', event)">⭐</span>`;
+              card.onclick = () => {
+                navigator.clipboard.writeText(item.word);
+                showToast(`Kopierte "${item.word}"`);
+              };
+              cluster.appendChild(card);
+            });
+            section.appendChild(cluster);
+            dictFeed.appendChild(section);
+          }
+          return;
+        }
+
+        // --- ENGLISH MODE (Datamuse API) ---
         if (activeFilterMode === 'phrases') {
           const [resBefore, resAfter] = await Promise.all([
             fetch(`https://api.datamuse.com/words?rel_bga=${encodeURIComponent(term)}&md=f&max=40`),
@@ -1486,7 +1591,7 @@
           }
 
           const section = document.createElement('div');
-          section.innerHTML = `<div class="syllable-group-title">Word Pairings & Collocations (${phrases.length})</div>`;
+          section.innerHTML = `<div class="syllable-group-title">Word Pairings (${phrases.length})</div>`;
           phrases.forEach(phrase => {
             const card = document.createElement('div');
             card.className = 'phrase-card';
@@ -1501,7 +1606,6 @@
           return;
         }
 
-        // Idioms & Sayings
         if (activeFilterMode === 'idioms') {
           const [res1, res2] = await Promise.all([
             fetch(`https://api.datamuse.com/words?sp=*+${encodeURIComponent(term)}+*&max=60`),
@@ -1512,20 +1616,18 @@
 
           const idiomMap = new Map();
           [...data1, ...data2].forEach(item => {
-            if (item.word.includes(' ') && !idiomMap.has(item.word)) {
-              idiomMap.set(item.word, item);
-            }
+            if (item.word.includes(' ') && !idiomMap.has(item.word)) idiomMap.set(item.word, item);
           });
 
           dictFeed.innerHTML = '';
           const list = Array.from(idiomMap.values());
           if (!list.length) {
-            dictFeed.innerHTML = `<span style="color:var(--muted); font-size:12px;">No idioms or clichés found containing "${term}".</span>`;
+            dictFeed.innerHTML = `<span style="color:var(--muted); font-size:12px;">No idioms found containing "${term}".</span>`;
             return;
           }
 
           const section = document.createElement('div');
-          section.innerHTML = `<div class="syllable-group-title">Idioms, Clichés & Sayings (${list.length})</div>`;
+          section.innerHTML = `<div class="syllable-group-title">Idioms & Sayings (${list.length})</div>`;
           list.forEach(item => {
             const card = document.createElement('div');
             card.className = 'phrase-card';
@@ -1540,7 +1642,6 @@
           return;
         }
 
-        // Alliterations
         if (activeFilterMode === 'alliterations') {
           const letter = (selectedLetter || 'A').toLowerCase();
           const res = await fetch(`https://api.datamuse.com/words?sp=${letter}*&ml=${encodeURIComponent(term)}&md=f&max=80`);
@@ -1548,7 +1649,7 @@
           dictFeed.innerHTML = '';
 
           if (!words.length) {
-            dictFeed.innerHTML = `<span style="color:var(--muted); font-size:12px;">No alliterations starting with "${selectedLetter.toUpperCase()}" for "${term}".</span>`;
+            dictFeed.innerHTML = `<span style="color:var(--muted); font-size:12px;">No alliterations starting with "${selectedLetter.toUpperCase()}".</span>`;
             return;
           }
 
@@ -1607,7 +1708,6 @@
             };
             cluster.appendChild(card);
           });
-
           section.appendChild(cluster);
           dictFeed.appendChild(section);
         }
@@ -1668,10 +1768,7 @@
         if (input === null) return;
         name = input.trim();
       }
-      
-      if (!name) {
-        name = getNextUntitledSongTitle();
-      }
+      if (!name) name = getNextUntitledSongTitle();
 
       const newSong = {
         id: 's_' + Date.now(),
@@ -1716,21 +1813,16 @@
       saveState();
 
       if (!state.songs.some(s => s.id === state.activeSongId)) {
-        if (state.songs.length > 0) {
-          loadSong(state.songs[0].id, state.songs[0].versions[0].id);
-        } else {
-          createNewSong(false);
-        }
+        if (state.songs.length > 0) loadSong(state.songs[0].id, state.songs[0].versions[0].id);
+        else createNewSong(false);
       }
-
       renderCatalogList();
     }
 
     function exportSinglePDF() {
       const song = state.songs.find(s => s.id === state.activeSongId);
       const originalTitle = document.title;
-      const filename = song ? song.title : 'Song';
-      document.title = filename;
+      document.title = song ? song.title : 'Song';
 
       const printContainer = document.getElementById('all-songs-print-container');
       printContainer.innerHTML = `
@@ -1739,7 +1831,6 @@
           <div style="font-size:16px; line-height:36px;">${editor.innerHTML}</div>
         </div>
       `;
-
       window.print();
       setTimeout(() => { document.title = originalTitle; }, 1000);
     }
@@ -1749,7 +1840,6 @@
         alert('Please mark at least one song to export.');
         return;
       }
-
       closeSongCatalog();
       const originalTitle = document.title;
       document.title = selectedSongIds.size === 1 
@@ -1768,7 +1858,6 @@
           </div>
         `;
       }).join('');
-
       window.print();
       setTimeout(() => { document.title = originalTitle; }, 1000);
     }
@@ -1776,10 +1865,8 @@
     function updateSelectedCounter() {
       const exportBtn = document.getElementById('export-selected-btn');
       const deleteBtn = document.getElementById('delete-selected-btn');
-
       exportBtn.innerText = `Export Selected (${selectedSongIds.size})`;
       deleteBtn.innerText = `Delete (${selectedSongIds.size})`;
-
       deleteBtn.style.display = selectedSongIds.size > 0 ? 'inline-flex' : 'none';
     }
 
@@ -1874,7 +1961,7 @@
         };
         versionPopover.appendChild(row);
       });
-      versionPopover.style.left = `${Math.min(touch.clientX, window.innerWidth - 190)}px`;
+      versionPopover.style.left = `${Math.min(touch.clientX, window.innerWidth - 180)}px`;
       versionPopover.style.top = `${Math.min(touch.clientY, window.innerHeight - 200)}px`;
       versionPopover.style.display = 'block';
     }
