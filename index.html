@@ -212,7 +212,7 @@
     #editor-content {
       flex: 1;
       overflow-y: auto;
-      padding: 14px 16px;
+      padding: 14px 16px 28px 16px;
       outline: none;
       font-size: 16px;
       line-height: var(--editor-line-height);
@@ -225,11 +225,26 @@
       transition: line-height 0.15s ease;
     }
 
+    /* Clean Pure CSS Dummy Placeholder */
     #editor-content:empty::before {
       content: attr(data-placeholder);
       color: var(--muted);
       pointer-events: none;
       display: block;
+    }
+
+    /* Editor Stats Rail (MasterWriter Word/Line count) */
+    .editor-footer-stats {
+      position: absolute;
+      bottom: 4px;
+      left: 44px;
+      font-size: 11px;
+      color: var(--muted);
+      pointer-events: none;
+      background: rgba(15, 16, 19, 0.8);
+      padding: 2px 6px;
+      border-radius: 4px;
+      z-index: 5;
     }
 
     /* Section Header Pills */
@@ -321,10 +336,10 @@
       color: var(--section-color);
     }
 
-    /* Resizable Reference Drawer */
+    /* Resizable MasterWriter Studio Reference Drawer */
     .reference-suite {
-      height: 46%;
-      min-height: 90px;
+      height: 48%;
+      min-height: 110px;
       max-height: 85%;
       background: var(--surface);
       display: flex;
@@ -356,10 +371,10 @@
     }
     .resize-handle:active::after { background: var(--accent); }
 
-    .search-dock { padding: 8px 12px; border-bottom: 1px solid var(--border); display: flex; gap: 6px; align-items: center; }
+    .search-dock { padding: 6px 12px; border-bottom: 1px solid var(--border); display: flex; gap: 6px; align-items: center; }
     .search-dock input {
       flex: 1;
-      padding: 8px 12px;
+      padding: 7px 11px;
       background: #111215;
       border: 1px solid var(--border);
       border-radius: 6px;
@@ -367,9 +382,65 @@
       font-size: 13px;
     }
 
-    .category-pills { display: flex; gap: 6px; padding: 8px 12px; border-bottom: 1px solid var(--border); overflow-x: auto; white-space: nowrap; }
-    .category-btn { background: transparent; border: 1px solid var(--border); border-radius: 14px; color: var(--muted); padding: 4px 10px; font-size: 11px; font-weight: 600; cursor: pointer; }
+    /* MasterWriter Style Mode Navigation */
+    .category-pills { display: flex; gap: 6px; padding: 6px 12px; border-bottom: 1px solid var(--border); overflow-x: auto; white-space: nowrap; }
+    .category-btn { background: transparent; border: 1px solid var(--border); border-radius: 14px; color: var(--muted); padding: 4px 10px; font-size: 11px; font-weight: 600; cursor: pointer; flex-shrink: 0; }
     .category-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+    /* Alliteration A-Z Sub-Bar */
+    .alliteration-strip {
+      display: none;
+      padding: 5px 12px;
+      background: #14151a;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      white-space: nowrap;
+      gap: 4px;
+    }
+    .alliteration-strip.visible { display: flex; }
+    .letter-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--muted);
+      border-radius: 4px;
+      width: 24px;
+      height: 24px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .letter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* MasterWriter "Collected / Scratchpad" Bar */
+    .collected-dock {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      background: #121317;
+      border-bottom: 1px solid var(--border);
+      overflow-x: auto;
+      white-space: nowrap;
+      font-size: 11px;
+    }
+    .collected-label { color: var(--muted); font-weight: 700; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; }
+    .collected-chip {
+      background: #232733;
+      color: #9ac7ff;
+      border: 1px solid #3d465c;
+      padding: 2px 7px;
+      border-radius: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+    .collected-chip:hover { background: #2f3547; }
+    .collected-chip .remove-chip { color: var(--muted); font-weight: bold; }
 
     .dictionary-feed { flex: 1; overflow-y: auto; padding: 12px; display: flex; flex-direction: column; gap: 14px; }
     .syllable-group-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
@@ -377,9 +448,22 @@
     
     .chips-cluster { display: flex; flex-wrap: wrap; gap: 6px; }
 
-    .word-card { background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 5px 9px; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
+    .word-card { 
+      background: var(--card); 
+      border: 1px solid var(--border); 
+      border-radius: 6px; 
+      padding: 5px 9px; 
+      font-size: 13px; 
+      cursor: pointer; 
+      display: inline-flex; 
+      align-items: center; 
+      gap: 6px; 
+      user-select: none;
+    }
     .word-card:active { background: var(--accent); color: #fff; }
     .word-card span { font-size: 10px; color: var(--muted); font-family: monospace; }
+    .word-card .collect-btn { color: var(--muted); font-size: 12px; margin-left: 2px; }
+    .word-card .collect-btn:hover { color: #fff; }
 
     .phrase-card {
       background: #17181f;
@@ -393,6 +477,7 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 4px;
+      user-select: none;
     }
     .phrase-card:active { background: var(--accent); color: #fff; border-color: var(--accent); }
     .phrase-card span { font-size: 10px; color: var(--muted); }
@@ -447,7 +532,7 @@
 
     @media print {
       body { background: #fff !important; color: #000 !important; }
-      header, .chord-strip-container, .meter-rail, .reference-suite, .floating-actions, .overlay, .popover-menu, #toast, #splash-screen { display: none !important; }
+      header, .chord-strip-container, .meter-rail, .reference-suite, .floating-actions, .overlay, .popover-menu, #toast, #splash-screen, .editor-footer-stats { display: none !important; }
       #editor-content { display: none !important; }
       #all-songs-print-container { display: block !important; padding: 0 !important; }
       .section-header-tag { color: #885e00 !important; background: transparent !important; border: 1px solid #885e00 !important; font-size: 11px !important; }
@@ -505,6 +590,8 @@
       
       <!-- ContentEditable Studio Editor with dynamic dummy placeholder -->
       <div id="editor-content" contenteditable="true" spellcheck="false" data-placeholder="Start typing lyrics..."></div>
+      
+      <div class="editor-footer-stats" id="editor-footer-stats">Words: 0 · Lines: 0</div>
 
       <!-- Floating Action Buttons -->
       <div class="floating-actions" id="floating-actions">
@@ -515,7 +602,7 @@
       <div id="all-songs-print-container"></div>
     </div>
 
-    <!-- Resizable MasterWriter Reference Drawer -->
+    <!-- Resizable MasterWriter Studio Reference Drawer -->
     <div class="reference-suite" id="reference-suite">
       <div class="resize-handle" id="resize-handle" title="Drag up or down to resize"></div>
 
@@ -524,12 +611,26 @@
         <button class="btn btn-accent" onclick="triggerManualSearch()">Find</button>
       </div>
 
+      <!-- MasterWriter Tool Modes -->
       <div class="category-pills">
         <button class="category-btn active" data-mode="rel_rhy">Rhymes</button>
         <button class="category-btn" data-mode="rel_nry">Near Rhymes</button>
-        <button class="category-btn" data-mode="phrases">Phrases & Idioms</button>
+        <button class="category-btn" data-mode="phrases">Phrases</button>
+        <button class="category-btn" data-mode="idioms">Idioms & Sayings</button>
+        <button class="category-btn" data-mode="alliterations">Alliterations</button>
         <button class="category-btn" data-mode="rel_syn">Synonyms</button>
         <button class="category-btn" data-mode="rel_trg">Word Families</button>
+      </div>
+
+      <!-- Alliteration Letters Strip (A-Z) -->
+      <div class="alliteration-strip" id="alliteration-strip"></div>
+
+      <!-- MasterWriter Collected / Scratchpad Tray -->
+      <div class="collected-dock" id="collected-dock">
+        <span class="collected-label">Collected:</span>
+        <div id="collected-chips-container" style="display:inline-flex; gap:4px; overflow-x:auto;">
+          <span style="color:var(--muted); font-style:italic;">Tap ⭐ to save ideas here</span>
+        </div>
       </div>
 
       <div class="dictionary-feed" id="dictionary-feed">
@@ -600,14 +701,17 @@
 
   <script>
     let state = { activeSongId: null, activeVersionId: null, songs: [] };
+    let collectedIdeas = [];
     let selectedSongIds = new Set();
     let activeFilterMode = 'rel_rhy';
+    let selectedLetter = 'A';
     let selectedChordElem = null;
     let savedSelectionRange = null;
     let areChordsVisible = true;
 
     const editor = document.getElementById('editor-content');
     const meterRail = document.getElementById('meter-rail');
+    const editorStats = document.getElementById('editor-footer-stats');
     const floatActions = document.getElementById('floating-actions');
     const findRhymesBtn = document.getElementById('find-rhymes-btn');
     const queryField = document.getElementById('query-field');
@@ -620,6 +724,8 @@
     const resizeHandle = document.getElementById('resize-handle');
     const workspace = document.getElementById('workspace');
     const splashScreen = document.getElementById('splash-screen');
+    const alliterationStrip = document.getElementById('alliteration-strip');
+    const collectedContainer = document.getElementById('collected-chips-container');
     let selectedWord = '';
 
     window.addEventListener('load', () => {
@@ -650,6 +756,12 @@
         saveState();
       }
 
+      // Restore Collected Scratchpad
+      const storedCollected = localStorage.getItem('hookandline_collected');
+      if (storedCollected) {
+        collectedIdeas = JSON.parse(storedCollected);
+      }
+
       const isSavedCollapsed = localStorage.getItem('hookandline_chords_collapsed');
       if (isSavedCollapsed === 'false') {
         chordContainer.classList.remove('collapsed');
@@ -659,7 +771,6 @@
         chordCollapseBtn.innerText = 'Show ▼';
       }
 
-      // Restore chord visibility state
       const savedVisibility = localStorage.getItem('hookandline_chords_visible');
       if (savedVisibility === 'false') {
         areChordsVisible = false;
@@ -676,8 +787,29 @@
       const savedHeight = localStorage.getItem('hookandline_drawer_height');
       if (savedHeight) referenceSuite.style.height = savedHeight;
 
+      buildAlliterationBar();
+      renderCollected();
       initResizableDrawer();
       loadSong(state.activeSongId, state.activeVersionId);
+    }
+
+    // Build MasterWriter A-Z bar
+    function buildAlliterationBar() {
+      const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+      alliterationStrip.innerHTML = '';
+      letters.forEach(char => {
+        const btn = document.createElement('button');
+        btn.className = `letter-btn ${char === selectedLetter ? 'active' : ''}`;
+        btn.innerText = char;
+        btn.onclick = () => {
+          document.querySelectorAll('.letter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          selectedLetter = char;
+          const term = queryField.value.trim() || selectedWord || 'heart';
+          executeLookup(term);
+        };
+        alliterationStrip.appendChild(btn);
+      });
     }
 
     function toggleChordVisibility() {
@@ -959,6 +1091,8 @@
       clone.querySelectorAll('.chord-badge').forEach(b => b.remove());
 
       let itemsHtml = '';
+      let totalWords = 0;
+      let totalLines = 0;
 
       Array.from(clone.childNodes).forEach(node => {
         if (node.classList && node.classList.contains('section-header-tag')) {
@@ -975,7 +1109,9 @@
           if (!clean) {
             itemsHtml += '<div class="meter-item">·</div>';
           } else {
-            const words = clean.split(/\s+/);
+            totalLines++;
+            const words = clean.split(/\s+/).filter(w => w.length > 0);
+            totalWords += words.length;
             const count = words.reduce((sum, w) => sum + countSyllables(w), 0);
             itemsHtml += `<div class="meter-item">${count}</div>`;
           }
@@ -983,6 +1119,7 @@
       });
 
       meterRail.innerHTML = itemsHtml || '<div class="meter-item">·</div>';
+      editorStats.innerText = `Words: ${totalWords} · Lines: ${totalLines}`;
     }
 
     function insertChordAtCursor(chord) {
@@ -1059,12 +1196,22 @@
       floatActions.style.display = 'none';
     });
 
+    // MasterWriter Tab Switching
     document.querySelectorAll('.category-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         activeFilterMode = btn.dataset.mode;
-        if (queryField.value.trim()) executeLookup(queryField.value.trim());
+
+        // Toggle Alliteration Bar
+        if (activeFilterMode === 'alliterations') {
+          alliterationStrip.classList.add('visible');
+        } else {
+          alliterationStrip.classList.remove('visible');
+        }
+
+        const term = queryField.value.trim() || selectedWord;
+        if (term) executeLookup(term);
       });
     });
 
@@ -1073,57 +1220,157 @@
       if (q) executeLookup(q);
     }
 
+    // MasterWriter Collected Tray Methods
+    function collectWord(word, e) {
+      if (e) e.stopPropagation();
+      if (!collectedIdeas.includes(word)) {
+        collectedIdeas.unshift(word);
+        if (collectedIdeas.length > 25) collectedIdeas.pop();
+        localStorage.setItem('hookandline_collected', JSON.stringify(collectedIdeas));
+        renderCollected();
+        showToast(`Collected "${word}"`);
+      }
+    }
+
+    function removeCollected(word, e) {
+      if (e) e.stopPropagation();
+      collectedIdeas = collectedIdeas.filter(w => w !== word);
+      localStorage.setItem('hookandline_collected', JSON.stringify(collectedIdeas));
+      renderCollected();
+    }
+
+    function renderCollected() {
+      if (collectedIdeas.length === 0) {
+        collectedContainer.innerHTML = '<span style="color:var(--muted); font-style:italic;">Tap ⭐ to save ideas here</span>';
+        return;
+      }
+      collectedContainer.innerHTML = collectedIdeas.map(item => `
+        <span class="collected-chip" onclick="insertCollectedWord('${item.replace(/'/g, "\\'")}')">
+          ${item} <span class="remove-chip" onclick="removeCollected('${item.replace(/'/g, "\\'")}', event)">×</span>
+        </span>
+      `).join('');
+    }
+
+    function insertCollectedWord(word) {
+      navigator.clipboard.writeText(word);
+      showToast(`Copied "${word}"`);
+    }
+
+    // High Quality Datamuse Search with MasterWriter Modes
     async function executeLookup(term) {
       if (!term) return;
       queryField.value = term;
-      dictFeed.innerHTML = '<span style="color:var(--muted); font-size:12px;">Searching database for "' + term + '"...</span>';
+      dictFeed.innerHTML = '<span style="color:var(--muted); font-size:12px;">Searching studio reference for "' + term + '"...</span>';
 
       try {
+        // 1. MasterWriter Phrases (Frequent 2-word collocations & pairings)
         if (activeFilterMode === 'phrases') {
-          const [res1, res2] = await Promise.all([
-            fetch(`https://api.datamuse.com/words?sp=*+${encodeURIComponent(term)}+*&max=60`),
-            fetch(`https://api.datamuse.com/words?rel_trg=${encodeURIComponent(term)}&max=60`)
+          const [resBefore, resAfter] = await Promise.all([
+            fetch(`https://api.datamuse.com/words?rel_bga=${encodeURIComponent(term)}&md=f&max=40`),
+            fetch(`https://api.datamuse.com/words?rel_bgb=${encodeURIComponent(term)}&md=f&max=40`)
           ]);
-
-          const data1 = await res1.json();
-          const data2 = await res2.json();
-
-          const phraseMap = new Map();
-          data1.forEach(item => {
-            if (item.word.includes(' ') && !phraseMap.has(item.word)) phraseMap.set(item.word, item);
-          });
-          data2.forEach(item => {
-            const combined = `${item.word} ${term}`;
-            if (!phraseMap.has(combined)) phraseMap.set(combined, { word: combined });
-          });
+          const beforeData = await resBefore.json();
+          const afterData = await resAfter.json();
 
           dictFeed.innerHTML = '';
-          const phraseList = Array.from(phraseMap.values());
+          const phrases = [];
+          beforeData.forEach(w => phrases.push(`${term} ${w.word}`));
+          afterData.forEach(w => phrases.push(`${w.word} ${term}`));
 
-          if (!phraseList.length) {
-            dictFeed.innerHTML = `<span style="color:var(--muted); font-size:12px;">No idioms found for "${term}".</span>`;
+          if (!phrases.length) {
+            dictFeed.innerHTML = `<span style="color:var(--muted); font-size:12px;">No phrase pairings found for "${term}".</span>`;
             return;
           }
 
           const section = document.createElement('div');
-          section.innerHTML = `<div class="syllable-group-title">Idioms & Expressions (${phraseList.length})</div>`;
-
-          phraseList.forEach(item => {
+          section.innerHTML = `<div class="syllable-group-title">Word Pairings & Collocations (${phrases.length})</div>`;
+          phrases.forEach(phrase => {
             const card = document.createElement('div');
             card.className = 'phrase-card';
-            card.innerHTML = `<span>${item.word}</span> <span style="font-size:10px;">Tap to copy</span>`;
+            card.innerHTML = `<span>${phrase}</span> <span style="font-size:13px;" onclick="collectWord('${phrase.replace(/'/g, "\\'")}', event)">⭐</span>`;
+            card.onclick = () => {
+              navigator.clipboard.writeText(phrase);
+              showToast(`Copied "${phrase}"`);
+            };
+            section.appendChild(card);
+          });
+          dictFeed.appendChild(section);
+          return;
+        }
+
+        // 2. MasterWriter Idioms & Sayings
+        if (activeFilterMode === 'idioms') {
+          const [res1, res2] = await Promise.all([
+            fetch(`https://api.datamuse.com/words?sp=*+${encodeURIComponent(term)}+*&max=60`),
+            fetch(`https://api.datamuse.com/words?sp=*+${encodeURIComponent(term)}&max=40`)
+          ]);
+          const data1 = await res1.json();
+          const data2 = await res2.json();
+
+          const idiomMap = new Map();
+          [...data1, ...data2].forEach(item => {
+            if (item.word.includes(' ') && !idiomMap.has(item.word)) {
+              idiomMap.set(item.word, item);
+            }
+          });
+
+          dictFeed.innerHTML = '';
+          const list = Array.from(idiomMap.values());
+          if (!list.length) {
+            dictFeed.innerHTML = `<span style="color:var(--muted); font-size:12px;">No idioms or clichés found containing "${term}".</span>`;
+            return;
+          }
+
+          const section = document.createElement('div');
+          section.innerHTML = `<div class="syllable-group-title">Idioms, Clichés & Sayings (${list.length})</div>`;
+          list.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'phrase-card';
+            card.innerHTML = `<span>${item.word}</span> <span style="font-size:13px;" onclick="collectWord('${item.word.replace(/'/g, "\\'")}', event)">⭐</span>`;
             card.onclick = () => {
               navigator.clipboard.writeText(item.word);
               showToast(`Copied "${item.word}"`);
             };
             section.appendChild(card);
           });
-
           dictFeed.appendChild(section);
           return;
         }
 
-        const res = await fetch(`https://api.datamuse.com/words?${activeFilterMode}=${encodeURIComponent(term)}&max=100`);
+        // 3. MasterWriter Alliterations (Associated words starting with chosen letter)
+        if (activeFilterMode === 'alliterations') {
+          const letter = (selectedLetter || 'A').toLowerCase();
+          const res = await fetch(`https://api.datamuse.com/words?sp=${letter}*&ml=${encodeURIComponent(term)}&md=f&max=80`);
+          const words = await res.json();
+          dictFeed.innerHTML = '';
+
+          if (!words.length) {
+            dictFeed.innerHTML = `<span style="color:var(--muted); font-size:12px;">No alliterations starting with "${selectedLetter.toUpperCase()}" for "${term}".</span>`;
+            return;
+          }
+
+          const section = document.createElement('div');
+          section.innerHTML = `<div class="syllable-group-title">Alliterations with "${selectedLetter.toUpperCase()}" (${words.length})</div>`;
+          const cluster = document.createElement('div');
+          cluster.className = 'chips-cluster';
+
+          words.forEach(item => {
+            const card = document.createElement('div');
+            card.className = 'word-card';
+            card.innerHTML = `${item.word} <span class="collect-btn" onclick="collectWord('${item.word.replace(/'/g, "\\'")}', event)">⭐</span>`;
+            card.onclick = () => {
+              navigator.clipboard.writeText(item.word);
+              showToast(`Copied "${item.word}"`);
+            };
+            cluster.appendChild(card);
+          });
+          section.appendChild(cluster);
+          dictFeed.appendChild(section);
+          return;
+        }
+
+        // 4. Rhymes, Near Rhymes, Synonyms, Word Families
+        const res = await fetch(`https://api.datamuse.com/words?${activeFilterMode}=${encodeURIComponent(term)}&md=f&max=100`);
         const words = await res.json();
         dictFeed.innerHTML = '';
 
@@ -1150,7 +1397,7 @@
           list.forEach(item => {
             const card = document.createElement('div');
             card.className = 'word-card';
-            card.innerHTML = `${item.word} <span>${item.numSyllables || ''}</span>`;
+            card.innerHTML = `${item.word} <span>${item.numSyllables || ''}</span> <span class="collect-btn" onclick="collectWord('${item.word.replace(/'/g, "\\'")}', event)">⭐</span>`;
             card.onclick = () => {
               navigator.clipboard.writeText(item.word);
               showToast(`Copied "${item.word}"`);
