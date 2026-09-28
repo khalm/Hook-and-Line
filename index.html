@@ -75,41 +75,40 @@
       letter-spacing: 0.5px;
     }
 
-    /* Top Studio Bar */
+    /* Top Studio Bar (Optimized without static headline) */
     header {
-      height: 52px;
-      padding: 0 14px;
+      height: 48px;
+      padding: 0 10px;
       background: var(--surface);
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 8px;
+      gap: 6px;
       z-index: 20;
     }
-    .header-left { display: flex; align-items: center; gap: 8px; overflow: hidden; }
-    .brand { font-weight: 800; font-size: 15px; letter-spacing: -0.5px; }
-    .brand span { color: var(--accent); }
+    .header-left { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
     .song-pill {
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 4px 10px;
+      border-radius: 18px;
+      padding: 5px 10px;
       display: flex;
       align-items: center;
       gap: 6px;
       cursor: pointer;
-      max-width: 140px;
+      max-width: 100%;
+      min-width: 0;
     }
-    .song-title-text { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .version-tag { font-size: 10px; background: #2f3240; color: #b0b4c8; padding: 1px 5px; border-radius: 4px; }
+    .song-title-text { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: 1; min-width: 0; }
+    .version-tag { font-size: 10px; background: #2f3240; color: #b0b4c8; padding: 1px 5px; border-radius: 4px; flex-shrink: 0; }
 
-    .header-actions { display: flex; align-items: center; gap: 6px; }
+    .header-actions { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
     .btn {
       background: var(--card);
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 6px 10px;
+      padding: 6px 9px;
       border-radius: 6px;
       font-size: 12px;
       font-weight: 600;
@@ -117,6 +116,7 @@
       display: inline-flex;
       align-items: center;
       gap: 4px;
+      flex-shrink: 0;
     }
     .btn-accent { background: var(--accent); border-color: var(--accent); color: #fff; }
     .btn-danger { background: #2a1618; border-color: #5c1f24; color: #ff8589; }
@@ -597,7 +597,6 @@
 
   <header>
     <div class="header-left">
-      <div class="brand">Hook <span>&</span> Line</div>
       <div class="song-pill" onclick="openSongCatalog()">
         <span class="song-title-text" id="active-title">Untitled Song 1</span>
         <span class="version-tag" id="active-version-tag">v1</span>
