@@ -121,6 +121,36 @@
     .btn-accent { background: var(--accent); border-color: var(--accent); color: #fff; }
     .btn-danger { background: #2a1618; border-color: #5c1f24; color: #ff8589; }
     .btn-toggle-active { background: #232738; border-color: #4b526d; color: #8fd2ff; }
+    .btn-recording { background: #d9383a !important; color: #fff !important; animation: pulse-red 1.2s infinite ease-in-out; }
+
+    @keyframes pulse-red {
+      0% { box-shadow: 0 0 0 0 rgba(217, 56, 58, 0.7); }
+      70% { box-shadow: 0 0 0 8px rgba(217, 56, 58, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(217, 56, 58, 0); }
+    }
+
+    /* Voice Scratchpad Audio Player Bar */
+    .memo-bar {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: #151720;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+    }
+    .memo-bar.visible { display: flex; }
+    .memo-bar audio { height: 26px; flex: 1; outline: none; }
+    .memo-btn {
+      background: var(--card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
 
     /* Collapsible Chords Strip */
     .chord-strip-container {
@@ -225,7 +255,6 @@
       transition: line-height 0.15s ease;
     }
 
-    /* Clean Pure CSS Dummy Placeholder */
     #editor-content:empty::before {
       content: attr(data-placeholder);
       color: var(--muted);
@@ -233,7 +262,7 @@
       display: block;
     }
 
-    /* Editor Stats Rail (MasterWriter Word/Line count) */
+    /* Word & Line Count Stats */
     .editor-footer-stats {
       position: absolute;
       bottom: 4px;
@@ -241,7 +270,7 @@
       font-size: 11px;
       color: var(--muted);
       pointer-events: none;
-      background: rgba(15, 16, 19, 0.8);
+      background: rgba(15, 16, 19, 0.85);
       padding: 2px 6px;
       border-radius: 4px;
       z-index: 5;
@@ -336,7 +365,7 @@
       color: var(--section-color);
     }
 
-    /* Resizable MasterWriter Studio Reference Drawer */
+    /* Resizable Reference Drawer */
     .reference-suite {
       height: 48%;
       min-height: 110px;
@@ -382,7 +411,6 @@
       font-size: 13px;
     }
 
-    /* MasterWriter Style Mode Navigation */
     .category-pills { display: flex; gap: 6px; padding: 6px 12px; border-bottom: 1px solid var(--border); overflow-x: auto; white-space: nowrap; }
     .category-btn { background: transparent; border: 1px solid var(--border); border-radius: 14px; color: var(--muted); padding: 4px 10px; font-size: 11px; font-weight: 600; cursor: pointer; flex-shrink: 0; }
     .category-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
@@ -415,7 +443,7 @@
     }
     .letter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-    /* MasterWriter "Collected / Scratchpad" Bar */
+    /* MasterWriter Collected Tray */
     .collected-dock {
       display: flex;
       align-items: center;
@@ -532,7 +560,7 @@
 
     @media print {
       body { background: #fff !important; color: #000 !important; }
-      header, .chord-strip-container, .meter-rail, .reference-suite, .floating-actions, .overlay, .popover-menu, #toast, #splash-screen, .editor-footer-stats { display: none !important; }
+      header, .chord-strip-container, .meter-rail, .reference-suite, .floating-actions, .overlay, .popover-menu, #toast, #splash-screen, .editor-footer-stats, .memo-bar { display: none !important; }
       #editor-content { display: none !important; }
       #all-songs-print-container { display: block !important; padding: 0 !important; }
       .section-header-tag { color: #885e00 !important; background: transparent !important; border: 1px solid #885e00 !important; font-size: 11px !important; }
@@ -559,13 +587,22 @@
       </div>
     </div>
     <div class="header-actions">
+      <!-- Record Audio Memo & Transcribe -->
+      <button class="btn" id="record-btn" onclick="toggleAudioRecording()">🎙️ Rec</button>
       <button class="btn" id="chord-visibility-btn" onclick="toggleChordVisibility()">Chords: On</button>
       <button class="btn" onclick="exportSinglePDF()">PDF</button>
       <button class="btn btn-accent" onclick="openSaveDialog()">Save</button>
     </div>
   </header>
 
-  <!-- Collapsible Chords Strip: Collapsed by Default -->
+  <!-- Audio Voice Memo Bar -->
+  <div class="memo-bar" id="memo-bar">
+    <span style="font-weight:700; color:var(--muted); font-size:10px;">MEMO:</span>
+    <audio id="memo-audio" controls></audio>
+    <button class="memo-btn" onclick="deleteAudioMemo()">Delete</button>
+  </div>
+
+  <!-- Collapsible Chords Strip -->
   <div class="chord-strip-container collapsed" id="chord-strip-container">
     <div class="chord-strip-header" onclick="toggleChordsCollapse()">
       <span>Quick Chords (Place cursor anywhere in lyrics, tap a chord)</span>
@@ -611,7 +648,7 @@
         <button class="btn btn-accent" onclick="triggerManualSearch()">Find</button>
       </div>
 
-      <!-- MasterWriter Tool Modes -->
+      <!-- Studio Mode Navigation -->
       <div class="category-pills">
         <button class="category-btn active" data-mode="rel_rhy">Rhymes</button>
         <button class="category-btn" data-mode="rel_nry">Near Rhymes</button>
@@ -625,7 +662,7 @@
       <!-- Alliteration Letters Strip (A-Z) -->
       <div class="alliteration-strip" id="alliteration-strip"></div>
 
-      <!-- MasterWriter Collected / Scratchpad Tray -->
+      <!-- Collected Scratchpad Tray -->
       <div class="collected-dock" id="collected-dock">
         <span class="collected-label">Collected:</span>
         <div id="collected-chips-container" style="display:inline-flex; gap:4px; overflow-x:auto;">
@@ -709,6 +746,13 @@
     let savedSelectionRange = null;
     let areChordsVisible = true;
 
+    // Audio & Transcription Variables
+    let isRecording = false;
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let recognition = null;
+    let transcribedText = '';
+
     const editor = document.getElementById('editor-content');
     const meterRail = document.getElementById('meter-rail');
     const editorStats = document.getElementById('editor-footer-stats');
@@ -720,6 +764,9 @@
     const chordContainer = document.getElementById('chord-strip-container');
     const chordCollapseBtn = document.getElementById('chord-collapse-btn');
     const chordVisibilityBtn = document.getElementById('chord-visibility-btn');
+    const recordBtn = document.getElementById('record-btn');
+    const memoBar = document.getElementById('memo-bar');
+    const memoAudio = document.getElementById('memo-audio');
     const referenceSuite = document.getElementById('reference-suite');
     const resizeHandle = document.getElementById('resize-handle');
     const workspace = document.getElementById('workspace');
@@ -747,6 +794,7 @@
             id: 'v_1',
             label: 'v1',
             html: '<div class="section-header-tag" contenteditable="false" data-type="verse">Verse 1</div><div><span class="chord-badge" contenteditable="false" data-chord="G"><span class="chord-badge-inner">G</span></span>We all came out to <span class="chord-badge" contenteditable="false" data-chord="F"><span class="chord-badge-inner">F</span></span>Montreux</div><div>On the <span class="chord-badge" contenteditable="false" data-chord="G"><span class="chord-badge-inner">G</span></span>shoreline drafting songs</div>',
+            audioMemo: null,
             updatedAt: Date.now()
           }]
         };
@@ -756,7 +804,6 @@
         saveState();
       }
 
-      // Restore Collected Scratchpad
       const storedCollected = localStorage.getItem('hookandline_collected');
       if (storedCollected) {
         collectedIdeas = JSON.parse(storedCollected);
@@ -789,11 +836,123 @@
 
       buildAlliterationBar();
       renderCollected();
+      initSpeechRecognition();
       initResizableDrawer();
       loadSong(state.activeSongId, state.activeVersionId);
     }
 
-    // Build MasterWriter A-Z bar
+    // Audio Voice Memo & Speech-to-Text Transcription
+    function initSpeechRecognition() {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+
+        recognition.onresult = (e) => {
+          let current = '';
+          for (let i = e.resultIndex; i < e.results.length; ++i) {
+            current += e.results[i][0].transcript;
+          }
+          transcribedText = current.trim();
+        };
+
+        recognition.onerror = () => {};
+      }
+    }
+
+    async function toggleAudioRecording() {
+      if (!isRecording) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          audioChunks = [];
+          transcribedText = '';
+
+          mediaRecorder = new MediaRecorder(stream);
+          mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+          mediaRecorder.onstop = handleRecordingComplete;
+
+          mediaRecorder.start();
+          if (recognition) {
+            try { recognition.start(); } catch (err) {}
+          }
+
+          isRecording = true;
+          recordBtn.innerText = '⏹ Stop';
+          recordBtn.classList.add('btn-recording');
+          showToast('Recording voice take & transcribing...');
+        } catch (err) {
+          alert('Microphone access denied or not supported on this browser.');
+        }
+      } else {
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+          mediaRecorder.stop();
+        }
+        if (recognition) {
+          try { recognition.stop(); } catch (err) {}
+        }
+        isRecording = false;
+        recordBtn.innerText = '🎙️ Rec';
+        recordBtn.classList.remove('btn-recording');
+      }
+    }
+
+    function handleRecordingComplete() {
+      const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64Audio = reader.result;
+        
+        // Save audio to active song version
+        const song = state.songs.find(s => s.id === state.activeSongId);
+        if (song) {
+          const ver = song.versions.find(v => v.id === state.activeVersionId);
+          if (ver) {
+            ver.audioMemo = base64Audio;
+            saveState();
+            displayAudioMemo(base64Audio);
+          }
+        }
+
+        // Insert transcribed text into lyrics canvas if captured
+        if (transcribedText) {
+          const textDiv = document.createElement('div');
+          textDiv.innerText = transcribedText;
+          editor.appendChild(textDiv);
+          updateMeter();
+          showToast(`Saved memo & transcribed "${transcribedText.slice(0, 20)}..."`);
+        } else {
+          showToast('Voice memo saved to song');
+        }
+      };
+      reader.readAsDataURL(audioBlob);
+    }
+
+    function displayAudioMemo(audioSrc) {
+      if (audioSrc) {
+        memoAudio.src = audioSrc;
+        memoBar.classList.add('visible');
+      } else {
+        memoAudio.src = '';
+        memoBar.classList.remove('visible');
+      }
+    }
+
+    function deleteAudioMemo() {
+      if (!confirm('Delete this voice recording?')) return;
+      const song = state.songs.find(s => s.id === state.activeSongId);
+      if (song) {
+        const ver = song.versions.find(v => v.id === state.activeVersionId);
+        if (ver) {
+          ver.audioMemo = null;
+          saveState();
+          displayAudioMemo(null);
+          showToast('Audio memo deleted');
+        }
+      }
+    }
+
+    // MasterWriter A-Z Bar
     function buildAlliterationBar() {
       const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
       alliterationStrip.innerHTML = '';
@@ -919,6 +1078,7 @@
       document.title = song.title + ' — Hook & Line';
 
       editor.innerHTML = sanitizeEditorHTML(ver.html);
+      displayAudioMemo(ver.audioMemo || null);
       
       bindChordListeners();
       bindSectionTagListeners();
@@ -1196,14 +1356,12 @@
       floatActions.style.display = 'none';
     });
 
-    // MasterWriter Tab Switching
     document.querySelectorAll('.category-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         activeFilterMode = btn.dataset.mode;
 
-        // Toggle Alliteration Bar
         if (activeFilterMode === 'alliterations') {
           alliterationStrip.classList.add('visible');
         } else {
@@ -1220,7 +1378,6 @@
       if (q) executeLookup(q);
     }
 
-    // MasterWriter Collected Tray Methods
     function collectWord(word, e) {
       if (e) e.stopPropagation();
       if (!collectedIdeas.includes(word)) {
@@ -1263,7 +1420,7 @@
       dictFeed.innerHTML = '<span style="color:var(--muted); font-size:12px;">Searching studio reference for "' + term + '"...</span>';
 
       try {
-        // 1. MasterWriter Phrases (Frequent 2-word collocations & pairings)
+        // Phrases (2-word collocations & pairings)
         if (activeFilterMode === 'phrases') {
           const [resBefore, resAfter] = await Promise.all([
             fetch(`https://api.datamuse.com/words?rel_bga=${encodeURIComponent(term)}&md=f&max=40`),
@@ -1298,7 +1455,7 @@
           return;
         }
 
-        // 2. MasterWriter Idioms & Sayings
+        // Idioms & Sayings
         if (activeFilterMode === 'idioms') {
           const [res1, res2] = await Promise.all([
             fetch(`https://api.datamuse.com/words?sp=*+${encodeURIComponent(term)}+*&max=60`),
@@ -1337,7 +1494,7 @@
           return;
         }
 
-        // 3. MasterWriter Alliterations (Associated words starting with chosen letter)
+        // Alliterations
         if (activeFilterMode === 'alliterations') {
           const letter = (selectedLetter || 'A').toLowerCase();
           const res = await fetch(`https://api.datamuse.com/words?sp=${letter}*&ml=${encodeURIComponent(term)}&md=f&max=80`);
@@ -1369,7 +1526,7 @@
           return;
         }
 
-        // 4. Rhymes, Near Rhymes, Synonyms, Word Families
+        // Rhymes, Near Rhymes, Synonyms, Word Families
         const res = await fetch(`https://api.datamuse.com/words?${activeFilterMode}=${encodeURIComponent(term)}&md=f&max=100`);
         const words = await res.json();
         dictFeed.innerHTML = '';
@@ -1433,6 +1590,7 @@
           id: 'v_' + Date.now(),
           label: 'v' + vNum,
           html: editor.innerHTML,
+          audioMemo: null,
           updatedAt: Date.now()
         };
         song.versions.push(newV);
@@ -1472,7 +1630,7 @@
       const newSong = {
         id: 's_' + Date.now(),
         title: name,
-        versions: [{ id: 'v_' + Date.now(), label: 'v1', html: '', updatedAt: Date.now() }]
+        versions: [{ id: 'v_' + Date.now(), label: 'v1', html: '', audioMemo: null, updatedAt: Date.now() }]
       };
       state.songs.unshift(newSong);
       loadSong(newSong.id, newSong.versions[0].id);
