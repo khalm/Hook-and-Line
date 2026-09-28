@@ -75,7 +75,7 @@
       letter-spacing: 0.5px;
     }
 
-    /* Top Studio Bar (Optimized without static headline) */
+    /* Top Studio Bar */
     header {
       height: 48px;
       padding: 0 10px;
@@ -251,8 +251,8 @@
       transition: height 0.15s ease, line-height 0.15s ease;
     }
     .meter-item.section-spacer {
-      height: 24px;
-      line-height: 24px;
+      height: 28px;
+      line-height: 28px;
       color: transparent;
     }
 
@@ -293,12 +293,11 @@
       z-index: 5;
     }
 
-    /* Section Header Pills */
+    /* Section Header Pills - Full Block Isolation */
     .section-header-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      margin: 10px 0 2px 0;
+      display: block;
+      width: fit-content;
+      margin: 12px 0 4px 0;
       padding: 2px 8px;
       background: rgba(255, 209, 102, 0.12);
       border: 1px solid rgba(255, 209, 102, 0.35);
@@ -308,7 +307,8 @@
       letter-spacing: 0.5px;
       text-transform: uppercase;
       border-radius: 4px;
-      line-height: 16px;
+      line-height: 18px;
+      height: 22px;
       user-select: none;
       cursor: pointer;
     }
@@ -1227,22 +1227,21 @@
         if (sel.rangeCount > 0) range = sel.getRangeAt(0);
       }
 
+      // Create tag element (block level)
       const tag = document.createElement('div');
       tag.className = 'section-header-tag';
       tag.contentEditable = 'false';
       tag.dataset.type = type;
 
-      if (type === 'verse') {
-        tag.innerText = 'Verse';
-      } else if (type === 'pre-chorus') {
-        tag.innerText = 'Pre-Chorus';
-      } else if (type === 'chorus') {
-        tag.innerText = 'Chorus';
-      } else if (type === 'bridge') {
-        tag.innerText = 'Bridge';
-      } else {
-        tag.innerText = customLabel || 'Section';
-      }
+      if (type === 'verse') tag.innerText = 'Verse';
+      else if (type === 'pre-chorus') tag.innerText = 'Pre-Chorus';
+      else if (type === 'chorus') tag.innerText = 'Chorus';
+      else if (type === 'bridge') tag.innerText = 'Bridge';
+      else tag.innerText = customLabel || 'Section';
+
+      // Always create a dedicated blank lyric row directly following the tag
+      const nextRow = document.createElement('div');
+      nextRow.innerHTML = '<br>';
 
       if (range) {
         let container = range.startContainer;
@@ -1254,12 +1253,24 @@
 
         if (container && container !== editor) {
           editor.insertBefore(tag, container);
+          editor.insertBefore(nextRow, container);
         } else {
+          range.insertNode(nextRow);
           range.insertNode(tag);
         }
       } else {
+        editor.prepend(nextRow);
         editor.prepend(tag);
       }
+
+      // Place cursor directly into the line below the section header
+      const newRange = document.createRange();
+      newRange.setStart(nextRow, 0);
+      newRange.collapse(true);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(newRange);
+      savedSelectionRange = newRange;
 
       bindSectionTagListeners();
       renumberVerses();
