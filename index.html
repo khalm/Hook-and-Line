@@ -179,16 +179,32 @@
       cursor: pointer;
     }
 
-    .chord-strip-items {
+    .chord-strip-content {
       display: flex;
+      flex-direction: column;
       gap: 6px;
-      padding: 0 12px 6px 12px;
+      padding: 0 12px 8px 12px;
+    }
+    .chord-strip-container.collapsed .chord-strip-content { display: none; }
+    .chord-strip-container.collapsed .chord-strip-header { padding: 6px 12px; }
+
+    .chord-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
       overflow-x: auto;
       white-space: nowrap;
-      align-items: center;
+      padding-bottom: 2px;
     }
-    .chord-strip-container.collapsed .chord-strip-items { display: none; }
-    .chord-strip-container.collapsed .chord-strip-header { padding: 6px 12px; }
+    .chord-row-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+      min-width: 48px;
+      user-select: none;
+    }
 
     .chord-pill {
       background: var(--card);
@@ -196,9 +212,10 @@
       color: var(--chord-color);
       font-weight: 700;
       font-size: 12px;
-      padding: 4px 10px;
+      padding: 4px 9px;
       border-radius: 6px;
       cursor: pointer;
+      flex-shrink: 0;
     }
     .chord-pill:active { background: var(--accent); color: #fff; }
     .chord-pill-delete { background: #2a1618; border-color: #5c1f24; color: #ff8589; }
@@ -602,22 +619,47 @@
     <button class="memo-btn" onclick="deleteAudioMemo()">Delete</button>
   </div>
 
-  <!-- Collapsible Chords Strip -->
+  <!-- Collapsible Complete Chords Strip (Major & Minor) -->
   <div class="chord-strip-container collapsed" id="chord-strip-container">
     <div class="chord-strip-header" onclick="toggleChordsCollapse()">
-      <span>Quick Chords (Place cursor anywhere in lyrics, tap a chord)</span>
+      <span>Quick Chords (Place cursor in lyrics, tap a chord to insert or swap)</span>
       <button class="chord-collapse-toggle" id="chord-collapse-btn">Show ▼</button>
     </div>
-    <div class="chord-strip-items" id="chord-strip-items">
-      <button class="chord-pill" onclick="insertChordAtCursor('G')">G</button>
-      <button class="chord-pill" onclick="insertChordAtCursor('F')">F</button>
-      <button class="chord-pill" onclick="insertChordAtCursor('C')">C</button>
-      <button class="chord-pill" onclick="insertChordAtCursor('D')">D</button>
-      <button class="chord-pill" onclick="insertChordAtCursor('Am')">Am</button>
-      <button class="chord-pill" onclick="insertChordAtCursor('Em')">Em</button>
-      <button class="chord-pill" onclick="insertChordAtCursor('Bb')">Bb</button>
-      <button class="chord-pill" onclick="promptCustomChord()">+ Custom</button>
-      <button class="chord-pill chord-pill-delete" onclick="deleteSelectedChord()">Del ⌫</button>
+    <div class="chord-strip-content">
+      <!-- Major Chords Row -->
+      <div class="chord-row">
+        <span class="chord-row-label">Major:</span>
+        <button class="chord-pill" onclick="insertChordAtCursor('E')">E</button>
+        <button class="chord-pill" onclick="insertChordAtCursor('F')">F</button>
+        <button class="chord-pill" onclick="insertChordAtCursor('F#')">F#</button>
+        <button class="chord-pill" onclick="insertChordAtCursor('G')">G</button>
+        <button class="chord-pill" onclick="insertChordAtCursor('G#')">G#</button>
+        <button class="chord-pill" onclick="insertChordAtCursor('A')">A</button>
+        <button class="chord-pill" onclick="insertChordAtCursor('Bb')">Bb</button>
+        <button class="chord-pill" onclick="insertChordAtCursor('B')">B</button>
+        <button class="chord-pill" onclick="insertChordAtCursor('C')">C</button>
+        <button class="chord-pill" onclick="insertChordAtCursor('C#')">C#</button>
+        <button class="chord-pill" onclick="insertChordAtCursor('D')">D</button>
+        <button class="chord-pill" onclick="insertChordAtCursor('D#')">D#</button>
+        <button class="chord-pill" onclick="promptCustomChord()">+ Custom</button>
+        <button class="chord-pill chord-pill-delete" onclick="deleteSelectedChord()">Del ⌫</button>
+      </div>
+      <!-- Minor Chords Row -->
+      <div class="chord-row">
+        <span class="chord-row-label">Minor:</span>
+        <button class="chord-pill" onclick="insertChordAtCursor('Em')">Em</button>
+        <button class="chord-pill" onclick="insertChordAtCursor('Fm')">Fm</button>
+        <button class="chord-pill" onclick="insertChordAtCursor('F#m')">F#m</button>
+        <button class="chord-pill" onclick="insertChordAtCursor('Gm')">Gm</button>
+        <button class="chord-pill" onclick="insertChordAtCursor('G#m')">G#m</button>
+        <button class="chord-pill" onclick="insertChordAtCursor('Am')">Am</button>
+        <button class="chord-pill" onclick="insertChordAtCursor('Bbm')">Bbm</button>
+        <button class="chord-pill" onclick="insertChordAtCursor('Bm')">Bm</button>
+        <button class="chord-pill" onclick="insertChordAtCursor('Cm')">Cm</button>
+        <button class="chord-pill" onclick="insertChordAtCursor('C#m')">C#m</button>
+        <button class="chord-pill" onclick="insertChordAtCursor('Dm')">Dm</button>
+        <button class="chord-pill" onclick="insertChordAtCursor('D#m')">D#m</button>
+      </div>
     </div>
   </div>
 
@@ -903,7 +945,6 @@
       reader.onloadend = () => {
         const base64Audio = reader.result;
         
-        // Save audio to active song version
         const song = state.songs.find(s => s.id === state.activeSongId);
         if (song) {
           const ver = song.versions.find(v => v.id === state.activeVersionId);
@@ -914,7 +955,6 @@
           }
         }
 
-        // Insert transcribed text into lyrics canvas if captured
         if (transcribedText) {
           const textDiv = document.createElement('div');
           textDiv.innerText = transcribedText;
@@ -952,7 +992,6 @@
       }
     }
 
-    // MasterWriter A-Z Bar
     function buildAlliterationBar() {
       const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
       alliterationStrip.innerHTML = '';
@@ -1326,7 +1365,7 @@
     }
 
     function promptCustomChord() {
-      const chord = prompt('Enter custom chord (e.g. C#m7, F#sus4):');
+      const chord = prompt('Enter custom chord (e.g. C#m7, F#sus4, Dadd9):');
       if (chord && chord.trim()) insertChordAtCursor(chord.trim());
     }
 
