@@ -15,6 +15,9 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
+  <!-- PDF.js library for client-side PDF text extraction -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
   <style>
     :root {
       --bg: #0b0c10;
@@ -59,7 +62,7 @@
     .splash-title span { color: var(--accent); }
     .splash-tagline { font-size: 13px; color: var(--muted); }
 
-    /* Sleek Top Studio Bar */
+    /* Top Studio Bar */
     header {
       height: 50px;
       padding: 0 10px;
@@ -143,7 +146,7 @@
       cursor: pointer;
     }
 
-    /* Clean Collapsible Chords Strip */
+    /* Collapsible Chords Strip */
     .chord-strip-container {
       background: var(--surface);
       border-bottom: 1px solid var(--border);
@@ -449,7 +452,6 @@
     }
     .category-btn.active { background: var(--text); color: var(--bg); border-color: var(--text); }
     
-    /* Disabled/Grayed out category states in Norwegian Mode */
     .category-btn.disabled {
       opacity: 0.35;
       cursor: not-allowed;
@@ -584,6 +586,8 @@
     .song-info { flex: 1; overflow: hidden; }
     .song-name { font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+    .btn-edit-song { background: transparent; border: 1px solid var(--border-light); color: var(--muted); border-radius: 5px; padding: 3px 6px; font-size: 11px; cursor: pointer; }
+    .btn-edit-song:hover { color: #fff; border-color: var(--accent); }
     .btn-delete-song { background: transparent; border: 1px solid #4a2125; color: #ff6b70; border-radius: 5px; padding: 3px 6px; font-size: 11px; cursor: pointer; }
 
     .popover-menu { position: fixed; background: var(--surface-2); border: 1px solid var(--border-light); border-radius: 8px; z-index: 300; display: none; min-width: 170px; }
@@ -617,6 +621,9 @@
     <div class="splash-title">Hook <span>&</span> Line</div>
     <div class="splash-tagline">Songwriting & Lyric Studio</div>
   </div>
+
+  <!-- Hidden File Input for PDF / TXT Import -->
+  <input type="file" id="file-importer" accept=".txt,.pdf" style="display: none;" onchange="handleFileImport(event)">
 
   <!-- Sleek Studio Header -->
   <header>
@@ -769,6 +776,7 @@
       <div class="dialog-header">
         <strong>Song Catalog</strong>
         <div style="display:flex; gap:6px;">
+          <button class="icon-btn" onclick="triggerFilePicker()">📂 Import</button>
           <button class="icon-btn" onclick="createNewSong()">+ New</button>
           <button class="icon-btn" onclick="closeSongCatalog()">Close</button>
         </div>
@@ -807,6 +815,11 @@
   <div id="toast"></div>
 
   <script>
+    // Initialize PDF.js worker
+    if (window.pdfjsLib) {
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+
     let state = { activeSongId: null, activeVersionId: null, songs: [] };
     let collectedIdeas = [];
     let selectedSongIds = new Set();
@@ -846,6 +859,7 @@
     const collectedContainer = document.getElementById('collected-chips-container');
     const langEnBtn = document.getElementById('lang-en-btn');
     const langNoBtn = document.getElementById('lang-no-btn');
+    const fileImporter = document.getElementById('file-importer');
 
     let selectedWord = '';
 
@@ -911,6 +925,155 @@
       loadSong(state.activeSongId, state.activeVersionId);
     }
 
+    // --- File Import Engine (TXT & PDF) ---
+    function triggerFilePicker() {
+      fileImporter.value = '';
+      fileImporter.click();
+    }
+
+    async function handleFileImport(e) {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      const fileNameWithoutExt = file.name.replace(/\.[^/.]+$/, '').trim();
+      let extractedText = '';
+
+      showToast('Reading file...');
+
+      try {
+        if (file.type === 'text/plain' || file.name.toLowerCase().endsWith('.txt')) {
+          extractedText = await file.text();
+        } else if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+          extractedText = await parsePdfText(file);
+        } else {
+          alert('Unsupported file format. Please upload a .txt or .pdf file.');
+          return;
+        }
+
+        if (!extractedText || !extractedText.trim()) {
+          alert('The selected document contains no readable text.');
+          return;
+        }
+
+        processImportedLyrics(extractedText, fileNameWithoutExt);
+      } catch (err) {
+        console.error(err);
+        alert('Failed to parse file: ' + err.message);
+      }
+    }
+
+    async function parsePdfText(file) {
+      if (!window.pdfjsLib) throw new Error('PDF reader engine not available.');
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      let fullText = '';
+
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+        const textContent = await page.getTextContent();
+        
+        let lastY = null;
+        let pageStr = '';
+
+        for (const item of textContent.items) {
+          if (lastY !== null && Math.abs(item.transform[5] - lastY) > 5) {
+            pageStr += '\n';
+          }
+          pageStr += item.str;
+          lastY = item.transform[5];
+        }
+        fullText += pageStr + '\n\n';
+      }
+      return fullText;
+    }
+
+    function processImportedLyrics(rawText, fallbackFileName) {
+      const lines = rawText.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+      
+      let candidateTitle = '';
+      let firstLineIndex = -1;
+
+      // Find the first non-empty line
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i].trim();
+        if (line.length > 0) {
+          firstLineIndex = i;
+          break;
+        }
+      }
+
+      if (firstLineIndex !== -1) {
+        const firstLine = lines[firstLineIndex].trim();
+        // Check if the first line is a section tag or too long to be a song title
+        const isSectionTag = /^(verse|chorus|bridge|pre-chorus|intro|outro|hook)(\s+\d+)?$/i.test(firstLine);
+        const isTooLong = firstLine.split(/\s+/).length > 8 || firstLine.length > 50;
+
+        if (!isSectionTag && !isTooLong) {
+          candidateTitle = firstLine;
+          // Remove the title line from lyrics canvas so it isn't duplicated
+          lines.splice(firstLineIndex, 1);
+        }
+      }
+
+      const songTitle = candidateTitle || fallbackFileName || getNextUntitledSongTitle();
+
+      // Convert line breaks and structural section markers to studio HTML
+      let htmlOutput = '';
+      lines.forEach(l => {
+        const clean = l.trim();
+        const sectionMatch = clean.match(/^(verse|chorus|bridge|pre-chorus|intro|outro)(\s+\d+)?$/i);
+
+        if (sectionMatch) {
+          htmlOutput += `<div class="section-header-tag" contenteditable="false" data-type="${sectionMatch[1].toLowerCase()}">${clean}</div><div><br></div>`;
+        } else if (clean.length === 0) {
+          htmlOutput += '<div><br></div>';
+        } else {
+          // Escape HTML special characters
+          const escaped = clean.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+          htmlOutput += `<div>${escaped}</div>`;
+        }
+      });
+
+      const newSong = {
+        id: 's_' + Date.now(),
+        title: songTitle,
+        versions: [{
+          id: 'v_' + Date.now(),
+          label: 'v1',
+          html: htmlOutput,
+          audioMemo: null,
+          updatedAt: Date.now()
+        }]
+      };
+
+      state.songs.unshift(newSong);
+      saveState();
+      loadSong(newSong.id, newSong.versions[0].id);
+      closeSongCatalog();
+      showToast(`Imported "${songTitle}"`);
+    }
+
+    // --- Song Renaming in Catalog ---
+    function renameSong(songId, currentTitle, e) {
+      if (e) e.stopPropagation();
+      const newName = prompt('Rename song:', currentTitle);
+      if (newName === null) return;
+      const cleanName = newName.trim();
+      if (!cleanName) return;
+
+      const song = state.songs.find(s => s.id === songId);
+      if (song) {
+        song.title = cleanName;
+        saveState();
+        if (song.id === state.activeSongId) {
+          document.getElementById('active-title').innerText = cleanName;
+          document.title = cleanName + ' — Hook & Line';
+        }
+        renderCatalogList();
+        showToast(`Renamed to "${cleanName}"`);
+      }
+    }
+
     // Language Toggle logic & UI adaptation
     function setLanguage(lang, triggerSearch = true) {
       currentLanguage = lang;
@@ -926,7 +1089,6 @@
           if (el) el.classList.add('disabled');
         });
 
-        // Fall back to Rhymes if user was on an unsupported tab
         if (['phrases', 'idioms', 'alliterations', 'rel_trg'].includes(activeFilterMode)) {
           switchTab('rel_rhy');
         }
@@ -1506,7 +1668,7 @@
       dictFeed.innerHTML = `<span style="color:var(--muted); font-size:12px;">${currentLanguage === 'no' ? 'Søker referanser for' : 'Searching studio reference for'} "${term}"...</span>`;
 
       try {
-        // --- NORWEGIAN MODE (Rimregisteret / Ordbok API) ---
+        // --- NORWEGIAN MODE (Rimregisteret / Ordbok API fallback) ---
         if (currentLanguage === 'no') {
           let url = '';
           if (activeFilterMode === 'rel_rhy') {
@@ -1525,7 +1687,6 @@
               results = Array.isArray(data) ? data : (data.results || data.ord || []);
             }
           } catch (netErr) {
-            // Fallback to Norwegian Wikipedia/Wiktionary search if API is unreachable
             const fallbackRes = await fetch(`https://no.wiktionary.org/w/api.php?action=opensearch&search=${encodeURIComponent(term)}&limit=30&origin=*`);
             const fallbackData = await fallbackRes.json();
             if (fallbackData && fallbackData[1]) {
@@ -1793,11 +1954,8 @@
         saveState();
 
         if (songId === state.activeSongId) {
-          if (state.songs.length > 0) {
-            loadSong(state.songs[0].id, state.songs[0].versions[0].id);
-          } else {
-            createNewSong(false);
-          }
+          if (state.songs.length > 0) loadSong(state.songs[0].id, state.songs[0].versions[0].id);
+          else createNewSong(false);
         }
         renderCatalogList();
       }
@@ -1885,7 +2043,7 @@
       list.innerHTML = '';
 
       if (state.songs.length === 0) {
-        list.innerHTML = '<div style="color:var(--muted); text-align:center; padding:20px;">No songs yet. Tap "+ New" above.</div>';
+        list.innerHTML = '<div style="color:var(--muted); text-align:center; padding:20px;">No songs yet. Tap "+ New" or "Import".</div>';
         updateSelectedCounter();
         return;
       }
@@ -1899,8 +2057,9 @@
           <input type="checkbox" class="song-checkbox" ${isChecked ? 'checked' : ''}>
           <div class="song-info">
             <div class="song-name">${song.title}</div>
-            <div style="font-size:11px; color:var(--muted);">${song.versions.length} versions (Hold for dropdown)</div>
+            <div style="font-size:11px; color:var(--muted);">${song.versions.length} versions (Hold for version menu)</div>
           </div>
+          <button class="btn-edit-song" title="Rename Song">✏️</button>
           <button class="btn-delete-song" title="Delete Song">🗑️</button>
         `;
 
@@ -1911,6 +2070,9 @@
           else selectedSongIds.delete(song.id);
           updateSelectedCounter();
         };
+
+        const editBtn = item.querySelector('.btn-edit-song');
+        editBtn.onclick = (e) => renameSong(song.id, song.title, e);
 
         const deleteBtn = item.querySelector('.btn-delete-song');
         deleteBtn.onclick = (e) => deleteSong(song.id, song.title, e);
@@ -1926,7 +2088,7 @@
         item.addEventListener('mouseup', cancelPress);
 
         item.onclick = (e) => {
-          if (e.target !== checkbox && e.target !== deleteBtn) {
+          if (e.target !== checkbox && e.target !== deleteBtn && e.target !== editBtn) {
             loadSong(song.id, song.versions[song.versions.length - 1].id);
             closeSongCatalog();
           }
