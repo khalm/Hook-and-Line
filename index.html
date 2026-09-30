@@ -1,3 +1,7 @@
+The reason no error appeared and no text was inserted comes down to two subtle issues:
+ * Gemini Thinking Tokens: In newer Gemini models (gemini-3.8-flash), the API returns internal reasoning ("thoughts") in parts[0] (part.thought: true) followed by the actual lyric text in parts[1]. The previous code only read parts[0], which was either empty or swallowed by the 250-token thinking budget.
+ * Caret/Selection Persistence: Tapping the ✨ AI popover moved focus away from the editor, causing range.insertNode to fail silently or insert a nested <div> inside the current line rather than appending a clean new line.
+Here is the complete, updated index.html. It explicitly disables the thinking budget (thinkingBudget: 0) for speed, filters out thought objects from the response, saves the exact cursor line on every tap/keypress, and inserts generated lines cleanly into the editor.
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -960,6 +964,7 @@
     // --- AI Ghostwriter Engine ---
     function toggleAiMenu(e) {
       e.stopPropagation();
+      saveCurrentRange();
       if (aiPopover.style.display === 'block') {
         aiPopover.style.display = 'none';
         return;
@@ -1004,15 +1009,16 @@
       const entireLyrics = clone.innerText.trim();
 
       let prefixContext = entireLyrics;
-      const sel = window.getSelection();
-      if (sel && sel.rangeCount > 0 && editor.contains(sel.anchorNode)) {
-        const preRange = document.createRange();
-        preRange.selectNodeContents(editor);
-        preRange.setEnd(sel.anchorNode, sel.anchorOffset);
-        const tempDiv = document.createElement('div');
-        tempDiv.appendChild(preRange.cloneContents());
-        tempDiv.querySelectorAll('.chord-badge').forEach(b => b.remove());
-        prefixContext = tempDiv.innerText.trim();
+      if (savedSelectionRange && editor.contains(savedSelectionRange.commonAncestorContainer)) {
+        try {
+          const preRange = document.createRange();
+          preRange.selectNodeContents(editor);
+          preRange.setEnd(savedSelectionRange.startContainer, savedSelectionRange.startOffset);
+          const tempDiv = document.createElement('div');
+          tempDiv.appendChild(preRange.cloneContents());
+          tempDiv.querySelectorAll('.chord-badge').forEach(b => b.remove());
+          prefixContext = tempDiv.innerText.trim();
+        } catch (err) {}
       }
 
       const song = state.songs.find(s => s.id === state.activeSongId);
@@ -1048,7 +1054,8 @@ Task: ${taskPrompt}`;
       const endpoints = [
         `https://generativelanguage.googleapis.com/v1/models/gemini-3.8-flash:generateContent?key=${apiKey}`,
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`,
-        `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${apiKey}`
+        `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`
       ];
 
       let lastError = null;
@@ -1061,7 +1068,8 @@ Task: ${taskPrompt}`;
               contents: [{ parts: [{ text: promptText }] }],
               generationConfig: {
                 temperature: 0.85,
-                maxOutputTokens: 250
+                maxOutputTokens: 1000,
+                thinkingConfig: { thinkingBudget: 0 }
               }
             })
           });
@@ -1072,8 +1080,19 @@ Task: ${taskPrompt}`;
           }
 
           const data = await response.json();
-          const output = data.candidates?.[0]?.content?.parts?.[0]?.text?.trim();
-          if (!output) throw new Error('No lyrics generated.');
+          const candidate = data.candidates?.[0];
+          const parts = candidate?.content?.parts || [];
+          
+          // Extract text strictly from non-thought parts
+          const nonThoughtParts = parts.filter(p => !p.thought && p.text).map(p => p.text);
+          let output = nonThoughtParts.join('\n').trim();
+
+          // Fallback if parts didn't have explicit thought flags
+          if (!output) {
+            output = parts.map(p => p.text || '').join('\n').trim();
+          }
+
+          if (!output) throw new Error('No lyrics returned by model.');
 
           insertGeneratedLyrics(output, mode === 'finish_line');
           showToast('Inserted AI lyrics');
@@ -1090,34 +1109,57 @@ Task: ${taskPrompt}`;
     function insertGeneratedLyrics(text, appendInline) {
       editor.focus();
       let range = savedSelectionRange;
-      const sel = window.getSelection();
-      if (!range && sel && sel.rangeCount > 0) range = sel.getRangeAt(0);
-
-      const lines = text.split('\n');
 
       if (appendInline) {
-        const clean = (text.startsWith(' ') ? '' : ' ') + text;
+        const clean = (text.startsWith(' ') ? '' : ' ') + text.replace(/\n+/g, ' ');
         const textNode = document.createTextNode(clean);
+
         if (range && editor.contains(range.commonAncestorContainer)) {
           range.insertNode(textNode);
-          range.setStartAfter(textNode);
-          range.collapse(true);
+          const newRange = document.createRange();
+          newRange.setStartAfter(textNode);
+          newRange.collapse(true);
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(newRange);
+          savedSelectionRange = newRange;
         } else {
           editor.appendChild(textNode);
         }
       } else {
-        const fragment = document.createDocumentFragment();
+        const lines = text.split('\n').filter(l => l.trim().length > 0);
+        let referenceNode = null;
+
+        if (range && editor.contains(range.commonAncestorContainer)) {
+          let node = range.startContainer;
+          while (node && node.parentNode !== editor && node !== editor) {
+            node = node.parentNode;
+          }
+          if (node && node !== editor) referenceNode = node;
+        }
+
+        let lastInsertedDiv = null;
         lines.forEach(l => {
           const div = document.createElement('div');
           div.innerText = l.trim();
-          fragment.appendChild(div);
+          if (referenceNode && referenceNode.parentNode === editor) {
+            referenceNode.after(div);
+            referenceNode = div;
+          } else {
+            editor.appendChild(div);
+          }
+          lastInsertedDiv = div;
         });
 
-        if (range && editor.contains(range.commonAncestorContainer)) {
-          range.deleteContents();
-          range.insertNode(fragment);
-        } else {
-          editor.appendChild(fragment);
+        if (lastInsertedDiv) {
+          const newRange = document.createRange();
+          newRange.selectNodeContents(lastInsertedDiv);
+          newRange.collapse(false);
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(newRange);
+          savedSelectionRange = newRange;
+          lastInsertedDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
       }
 
@@ -1584,8 +1626,15 @@ Task: ${taskPrompt}`;
 
     function saveCurrentRange() {
       const sel = window.getSelection();
-      if (sel && sel.rangeCount > 0) savedSelectionRange = sel.getRangeAt(0);
+      if (sel && sel.rangeCount > 0 && editor.contains(sel.anchorNode)) {
+        savedSelectionRange = sel.getRangeAt(0);
+      }
     }
+
+    // Dedicated listeners so mobile selection is never lost
+    editor.addEventListener('keyup', saveCurrentRange);
+    editor.addEventListener('mouseup', saveCurrentRange);
+    editor.addEventListener('touchend', saveCurrentRange);
 
     let selectionTimeout = null;
     document.addEventListener('selectionchange', () => {
